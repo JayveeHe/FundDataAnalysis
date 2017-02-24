@@ -22,7 +22,7 @@ sys.path.append(project_path)
 from logger_utils import data_process_logger
 
 
-def load_csv_data(csv_path,normalize=True):
+def load_csv_data(csv_path, normalize=True):
     with open(csv_path, 'rb') as fin:
         datas = []
         temp_list = []
@@ -37,13 +37,13 @@ def load_csv_data(csv_path,normalize=True):
             vec_value = [eval(a) for a in tmp[3:]]
             temp_list.append((stock_id, trade_date, score, vec_value))
         if not normalize:
-        	return temp_list
-        else:	
+            return temp_list
+        else:
             avg = np.mean(score_list)
             std = np.std(score_list)
             for item in temp_list:
-        	    normalize_score = (item[2] - avg) / std
-        	    datas.append((item[0],item[1],normalize_score,item[3]))
+                normalize_score = (item[2] - avg) / std
+                datas.append((item[0], item[1], normalize_score, item[3]))
             return datas
 
 
@@ -116,96 +116,107 @@ def test_datas(input_datas, model):
     for i in range(len(ranked_index_ylist)):
         print 'pre: %s\t origin: %s\t delta: %s' % (i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0])
         if abs((i - ranked_index_ylist[i][0])) > 700 and i < 35:
-			error_num += 1
+            error_num += 1
     print "error num is %s" % (error_num)
     gap = result_validation(ranked_index_ylist)
     if gap == -1:
-		print "happiness,the result is OK!"
+        print "happiness,the result is OK!"
     else:
-		print "sad,the result is bad, the gap is %s" % (gap)
+        print "sad,the result is bad, the gap is %s" % (gap)
 
-def result_validation(ranked_index_ylist,threshold=2000*0.35):
-	buyer_list = ranked_index_ylist[:35]
-	total_error = 0
-	for i in range(len(buyer_list)):
-		total_error += abs((buyer_list[i][0] - i))
-	if total_error <= threshold:
-		return -1
-	else:
-		return (total_error - threshold) / float(threshold)
+
+def result_validation(ranked_index_ylist, N=50, threshold=0.35):
+    buyer_list = ranked_index_ylist[:N]
+    total_error = 0
+    origin_rank_list = []
+    for i in range(len(buyer_list)):
+        origin_rank_list.append(buyer_list[i][0])
+        total_error += abs((buyer_list[i][0] - i))
+    mean_rank = np.mean(origin_rank_list)
+    print 'mean_rank = %s' % mean_rank
+    if mean_rank <= threshold * len(ranked_index_ylist):
+        # if total_error <= threshold:
+        return -1
+    else:
+        return (total_error - threshold * len(ranked_index_ylist)) / float(threshold * len(ranked_index_ylist))
+
 
 def normalize_data(input_data):
-	'''
-	author:zxj
-	func:normalize
-	input:origin input data
-	return:tuple of (normalize_score,fea_vec,id,date)
-	'''
-	output_data = []
-	from itertools import groupby
-	import numpy as np
-	score_list  = [(input_data[i][1],(input_data[i][2],input_data[i][3],input_data[i][0])) \
-	for i in range(len(input_data))]
-	score_group_list = groupby(score_list,lambda p:p[0])
-	#for key,group in score_group_list:
-	#	print list(group)[0][1]
-	for key,group in score_group_list:
-		temp_list = list(group)
-		score_list = [a[1][0] for a in temp_list]
-		score_list = np.array(score_list).astype(np.float)
-		print "the score list is %s" % (''.join(str(v) for v in score_list))
-		vec_list = [a[1][1] for a in temp_list]
-		id_list = [a[1][2] for a in temp_list]
-		avg = np.mean(score_list)
-		std = np.std(score_list)
-		for i in range(len(score_list)):
-			#normalize
-			normalize_score = (score_list[i] - avg) / std
-			output_data.append((normalize_score,vec_list[i],id_list[i],key))
-	return output_data		
-
+    """
+    author:zxj
+    func:normalize
+    input:origin input data
+    return:tuple of (normalize_score,fea_vec,id,date)
+    """
+    output_data = []
+    from itertools import groupby
+    import numpy as np
+    score_list = [(input_data[i][1], (input_data[i][2], input_data[i][3], input_data[i][0])) \
+                  for i in range(len(input_data))]
+    score_group_list = groupby(score_list, lambda p: p[0])
+    # for key,group in score_group_list:
+    #	print list(group)[0][1]
+    for key, group in score_group_list:
+        temp_list = list(group)
+        score_list = [a[1][0] for a in temp_list]
+        score_list = np.array(score_list).astype(np.float)
+        print "the score list is %s" % (''.join(str(v) for v in score_list))
+        vec_list = [a[1][1] for a in temp_list]
+        id_list = [a[1][2] for a in temp_list]
+        avg = np.mean(score_list)
+        std = np.std(score_list)
+        for i in range(len(score_list)):
+            # normalize
+            normalize_score = (score_list[i] - avg) / std
+            output_data.append((normalize_score, vec_list[i], id_list[i], key))
+    return output_data
 
 
 if __name__ == '__main__':
-
-    #train_datas = []
-    #for i in range(1, 21):
-    #	print 'loading %s file'%i
-    #    datas = load_csv_data('./datas/%s.csv' % i)
-    #    train_datas += datas
-    #output_path = './models/gbrt_model_20.mod'    
-    #train_model(train_datas,output_path)    
-    print '====================== 20 not normalize'
-    gbrt_mod = cPickle.load(open('./models/gbrt_model_20_no_normalize.mod','rb'))
-    datas = load_csv_data('./datas/22.csv',normalize=False)
-    test_datas(datas,gbrt_mod)
-    #out_data = normalize_data(train_datas)    
-    #for item in out_data:
+    train_datas = []
+    # for i in range(1, 21):
+    #     print 'loading %s file' % i
+    #     datas = load_csv_data('./datas/%s.csv' % i)
+    #     train_datas += datas
+    # train_datas = load_csv_data('./datas/%s.csv' % 310)
+    model_tag = 'norm_10'
+    # output_path = './models/gbrt_model_%s.mod' % model_tag
+    # train_model(train_datas, output_path)
+    print '====================== 20 normalize test set'
+    gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
+    datas = load_csv_data('./datas/4.csv', normalize=True)
+    test_datas(datas, gbrt_mod)
+    print '====================== 20 normalize train set'
+    gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
+    datas = load_csv_data('./datas/310.csv', normalize=True)
+    test_datas(datas, gbrt_mod)
+    # out_data = normalize_data(train_datas)
+    # for item in out_data:
     #	print 'item is : %s\t%s\t%s\n'%(item[0],item[2],item[3])
-    #label_set = []
-    #vec_set = []
-    #for i in range(len(train_datas)):
+    # label_set = []
+    # vec_set = []
+    # for i in range(len(train_datas)):
     #    label_set.append(train_datas[i][2])
     #    vec_set.append(train_datas[i][3])
     ## gbrt_mod = train_model(train_datas)
-    #model_tag = '50'
-    #train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
+    # model_tag = '50'
+    # train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
     ## xlist = [a[3] for a in datas[100:200]]
     ## ylist = [a[2] for a in datas[100:200]]
     ## cross_valid(xlist, ylist, gbrt_mod)
-    #gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
-    #svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    #print '--------GBRT:----------'
-    #datas = load_csv_data('./datas/310.csv')
-    #data_process_logger.info('testing')
-    #test_datas(datas, gbrt_mod)
-    #print '==============='
-    #datas = load_csv_data('./datas/4.csv')
-    #test_datas(datas, gbrt_mod)
-    #print '--------SVR:----------'
-    #datas = load_csv_data('./datas/310.csv')
-    #data_process_logger.info('testing')
-    #test_datas(datas, svr_mod)
-    #print '==============='
-    #datas = load_csv_data('./datas/4.csv')
-    #test_datas(datas, svr_mod)
+    # gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
+    # svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
+    # print '--------GBRT:----------'
+    # datas = load_csv_data('./datas/310.csv')
+    # data_process_logger.info('testing')
+    # test_datas(datas, gbrt_mod)
+    # print '==============='
+    # datas = load_csv_data('./datas/4.csv')
+    # test_datas(datas, gbrt_mod)
+    # print '--------SVR:----------'
+    # datas = load_csv_data('./datas/310.csv')
+    # data_process_logger.info('testing')
+    # test_datas(datas, svr_mod)
+    # print '==============='
+    # datas = load_csv_data('./datas/4.csv')
+    # test_datas(datas, svr_mod)
