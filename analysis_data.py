@@ -137,7 +137,7 @@ def test_datas(input_datas, model):
     ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
     for i in range(len(ranked_index_ylist)):
         data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s' % (
-        i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
+            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
         if abs((i - ranked_index_ylist[i][0])) > 700 and i < 35:
             error_num += 1
     data_process_logger.info("error num is %s" % (error_num))
@@ -157,6 +157,8 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
         total_error += abs((buyer_list[i][0] - i))
     mean_rank = np.mean(origin_rank_list)
     print 'mean_rank = %s' % mean_rank
+    mean_rank_rate = mean_rank / len(origin_rank_list)
+    print 'mean_rank_rate = %s' % mean_rank_rate
     std_rank = np.std(origin_rank_list)
     print 'std_rank = %s' % std_rank
     if mean_rank <= threshold * len(ranked_index_ylist):
@@ -202,7 +204,7 @@ if __name__ == '__main__':
     model_tag = 'norm_50'
     train_datas = []
     for i in range(1, 51):
-        data_process_logger.info('loading %s file' % i)
+        print 'loading %s file' % i
         datas = load_csv_data('./datas/%s.csv' % i)
         train_datas += datas
     output_gbrt_path = './models/gbrt_%s.model' % model_tag
