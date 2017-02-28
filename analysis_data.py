@@ -68,7 +68,7 @@ def load_csv_data(csv_path, normalize=True):
             return datas
 
 
-def train_gbrt_model(input_datas, output_path='./models/gbrt_model.mod', n_estimators=300, loss='lad', subsample=0.7,
+def train_gbrt_model(input_datas, output_path='./models/gbrt_model.mod', n_estimators=500, loss='lad', subsample=0.7,
                      max_depth=4, max_leaf_nodes=10):
     label_set = []
     vec_set = []
@@ -119,9 +119,9 @@ def train_regression_age_model(input_xlist, input_ylist, model_label):
     # SVR
     data_process_logger.info('training svr')
     clf = svm.SVR()
-    parameters = {'C': [1e3, 5e3, 1e4, 5e4, 1e5, 1e2, 1e1, 1e-1], 'kernel': ['rbf', 'sigmoid'],
-                  'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.05]}
-    svr_mod = grid_search.GridSearchCV(clf, parameters, n_jobs=10, scoring='mean_absolute_error')
+    parameters = {'C': [1e3, 5e3, 1e2, 1e1, 1e-1], 'kernel': ['rbf', 'sigmoid'],
+                  'gamma': [0.0001, 0.001, 0.01, 0.1, 0.05]}
+    svr_mod = grid_search.GridSearchCV(clf, parameters, n_jobs=12, scoring='mean_absolute_error')
     svr_mod.fit(input_xlist, input_ylist)
     print svr_mod.best_estimator_
     fout = open('%s/models/svr_%s.model' % (project_path, model_label), 'wb')
@@ -131,9 +131,9 @@ def train_regression_age_model(input_xlist, input_ylist, model_label):
     # GBRT
     data_process_logger.info('training gbrt')
     gbrt_mod = GradientBoostingRegressor()
-    gbrt_parameters = {'n_estimators': [100, 200, 300, 350], 'max_depth': [2, 3, 4],
-                       'max_leaf_nodes': [10, 20, 30], 'loss': ['huber', 'ls', 'lad'], 'subsample': [0.2, 0.5, 0.7]}
-    gbrt_mod = grid_search.GridSearchCV(gbrt_mod, gbrt_parameters, n_jobs=10, scoring='mean_absolute_error')
+    gbrt_parameters = {'n_estimators': [300, 350], 'max_depth': [2, 3, 4],
+                       'max_leaf_nodes': [10, 20], 'loss': ['huber', 'lad'], 'subsample': [0.2, 0.5, 0.7]}
+    gbrt_mod = grid_search.GridSearchCV(gbrt_mod, gbrt_parameters, n_jobs=12, scoring='mean_absolute_error')
     gbrt_mod.fit(input_xlist, input_ylist)
     gbrt_out = open('%s/models/gbrt_%s.model' % (project_path, model_label), 'wb')
     cPickle.dump(gbrt_mod, gbrt_out)
@@ -223,23 +223,23 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_sample_10000'
+    model_tag = 'norm_sample_grid_40000'
     train_datas = []
 
-    # for i in range(1, 21):
-    #     print 'loading %s file' % i
-    #     datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
-    #     train_datas += datas
-    # # random sample the train datas
-    # data_process_logger.info('random sampling...')
-    # SAMPLE_SIZE = 10000
-    # random.shuffle(train_datas)
-    # train_datas = train_datas[:SAMPLE_SIZE]
-    # # start training
-    # output_gbrt_path = './models/gbrt_%s.model' % model_tag
-    # output_svr_path = './models/svr_%s.model' % model_tag
-    # train_svr_model(train_datas, output_svr_path)
-    # train_gbrt_model(train_datas, output_gbrt_path)
+    for i in range(1, 101):
+        print 'loading %s file' % i
+        datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
+        train_datas += datas
+    # random sample the train datas
+    data_process_logger.info('random sampling...')
+    SAMPLE_SIZE = 40000
+    random.shuffle(train_datas)
+    train_datas = train_datas[:SAMPLE_SIZE]
+    # start training
+    #output_gbrt_path = './models/gbrt_%s.model' % model_tag
+    #output_svr_path = './models/svr_%s.model' % model_tag
+    #train_svr_model(train_datas, output_svr_path)
+    #train_gbrt_model(train_datas, output_gbrt_path)
 
     # print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
@@ -259,7 +259,11 @@ if __name__ == '__main__':
     #    vec_set.append(train_datas[i][3])
     # timators gbrt_mod = train_model(train_datas)
     # # model_tag = '50'
-    # train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
+    # ------- grid ------
+    vec_set = [a[3] for a in train_datas]
+    label_set = [a[2] for a in train_datas]
+    train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
+    
     # end = time.time()
     # print "spend the time %s" % (end - start)
     ## xlist = [a[3] for a in datas[100:200]]
@@ -267,17 +271,23 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
     gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
     data_process_logger.info('--------gbrt:----------')
-    datas = load_csv_data('./datas/1.csv')
+    data_process_logger.info('using model: %s/models/gbrt_%s.model' % (project_path, model_tag))
+    data_process_logger.info('testing file: /datas/350.csv')
+    datas = load_csv_data('./datas/350.csv')
     data_process_logger.info('testing')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/200.csv')
+    data_process_logger.info('testing file: /datas/250.csv')
+    datas = load_csv_data('./datas/250.csv')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('--------SVR:----------')
+    data_process_logger.info('using model: %s/models/svr_%s.model' % (project_path, model_tag))
     svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    datas = load_csv_data('./datas/1.csv')
+    data_process_logger.info('testing file: /datas/350.csv')
+    datas = load_csv_data('./datas/350.csv')
     data_process_logger.info('testing')
     test_datas(datas, svr_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/200.csv')
+    data_process_logger.info('testing file: /datas/250.csv')
+    datas = load_csv_data('./datas/250.csv')
     test_datas(datas, svr_mod)
