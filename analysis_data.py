@@ -5,6 +5,7 @@ Created by jayvee on 17/2/23.
 https://github.com/JayveeHe
 """
 import os
+import random
 import sys
 import pickle
 import time
@@ -21,6 +22,7 @@ print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
 sys.path.append(project_path)
 
 from utils.logger_utils import data_process_logger
+
 
 def load_csv_data(csv_path, normalize=True):
     from sklearn import preprocessing
@@ -57,12 +59,12 @@ def load_csv_data(csv_path, normalize=True):
             vec_scale = preprocessing.scale(vec_list)
             vec_scale_list = list(vec_scale)
             for i in range(len(id_list)):
-                datas.append((id_list[i],date_list[i],score_scale_list[i],list(vec_scale_list[i])))
-#            avg = np.mean(score_list)
-#            std = np.std(score_list)
-#            for item in temp_list:
-#                normalize_score = (item[2] - avg) / std
-#                datas.append((item[0], item[1], normalize_score, item[3]))
+                datas.append((id_list[i], date_list[i], score_scale_list[i], list(vec_scale_list[i])))
+            # avg = np.mean(score_list)
+            #            std = np.std(score_list)
+            #            for item in temp_list:
+            #                normalize_score = (item[2] - avg) / std
+            #                datas.append((item[0], item[1], normalize_score, item[3]))
             return datas
 
 
@@ -220,16 +222,22 @@ def normalize_data(input_data):
 if __name__ == '__main__':
     start = time.time()
     model_tag = 'norm_5'
-    #train_datas = []
+    train_datas = []
 
-    #for i in range(1, 6):
-    #    print 'loading %s file' % i
-    #    datas = load_csv_data('./datas/%s.csv' % i,normalize=True)
-    #    train_datas += datas
-    #output_gbrt_path = './models/gbrt_%s.model' % model_tag
-    #output_svr_path = './models/svr_%s.model' % model_tag
-    #train_svr_model(train_datas, output_svr_path)
-    #train_gbrt_model(train_datas, output_gbrt_path)
+    for i in range(1, 11):
+        print 'loading %s file' % i
+        datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
+        train_datas += datas
+    # random sample the train datas
+    data_process_logger.info('random sampling...')
+    SAMPLE_SIZE = 5000
+    random.shuffle(train_datas)
+    train_datas = train_datas[:SAMPLE_SIZE]
+    # start training
+    output_gbrt_path = './models/gbrt_%s.model' % model_tag
+    output_svr_path = './models/svr_%s.model' % model_tag
+    train_svr_model(train_datas, output_svr_path)
+    train_gbrt_model(train_datas, output_gbrt_path)
 
     # print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
@@ -257,17 +265,17 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
     gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
     data_process_logger.info('--------gbrt:----------')
-    datas = load_csv_data('./datas/150.csv')
+    datas = load_csv_data('./datas/1.csv')
     data_process_logger.info('testing')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/200.csv')
+    datas = load_csv_data('./datas/150.csv')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('--------SVR:----------')
     svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    datas = load_csv_data('./datas/150.csv')
+    datas = load_csv_data('./datas/1.csv')
     data_process_logger.info('testing')
     test_datas(datas, svr_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/200.csv')
+    datas = load_csv_data('./datas/150.csv')
     test_datas(datas, svr_mod)
