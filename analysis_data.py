@@ -20,8 +20,7 @@ project_path = os.path.dirname(os.path.abspath(__file__))
 print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
 sys.path.append(project_path)
 
-from logger_utils import data_process_logger
-
+from utils.logger_utils import data_process_logger
 
 def load_csv_data(csv_path, normalize=True):
     from sklearn import preprocessing
@@ -44,8 +43,14 @@ def load_csv_data(csv_path, normalize=True):
             date_list.append(trade_date)
             id_list.append(stock_id)
             temp_list.append((stock_id, trade_date, score, vec_value))
+        # all not normalize    
         if not normalize:
-            return temp_list
+            avg = np.mean(score_list)
+            std = np.std(score_list)
+            for item in temp_list:
+                normalize_score = (item[2] - avg) / std
+                datas.append((item[0], item[1], normalize_score, item[3]))
+            return datas
         else:
             score_scale = preprocessing.scale(score_list)
             score_scale_list = list(score_scale)
@@ -143,11 +148,11 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
 
 def test_datas(input_datas, model):
     error_num = 0
-    input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] > 0 else -1)
+    input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] < 0 else -1)
     xlist = [a[3] for a in input_ranked_list]
     ylist = model.predict(xlist)
     index_ylist = [(i, ylist[i]) for i in range(len(ylist))]
-    ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
+    ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] < 0 else -1)
     for i in range(len(ranked_index_ylist)):
         data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s' % (
             i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
@@ -215,16 +220,16 @@ def normalize_data(input_data):
 if __name__ == '__main__':
     start = time.time()
     model_tag = 'norm_5'
-    train_datas = []
+    #train_datas = []
 
-    for i in range(1, 6):
-        print 'loading %s file' % i
-        datas = load_csv_data('./datas/%s.csv' % i)
-        train_datas += datas
-    output_gbrt_path = './models/gbrt_%s.model' % model_tag
-    output_svr_path = './models/svr_%s.model' % model_tag
-    train_svr_model(train_datas, output_svr_path)
-    train_gbrt_model(train_datas, output_gbrt_path)
+    #for i in range(1, 6):
+    #    print 'loading %s file' % i
+    #    datas = load_csv_data('./datas/%s.csv' % i,normalize=True)
+    #    train_datas += datas
+    #output_gbrt_path = './models/gbrt_%s.model' % model_tag
+    #output_svr_path = './models/svr_%s.model' % model_tag
+    #train_svr_model(train_datas, output_svr_path)
+    #train_gbrt_model(train_datas, output_gbrt_path)
 
     # print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
@@ -252,17 +257,17 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
     gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
     data_process_logger.info('--------gbrt:----------')
-    datas = load_csv_data('./datas/1.csv')
+    datas = load_csv_data('./datas/150.csv')
     data_process_logger.info('testing')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/100.csv')
+    datas = load_csv_data('./datas/200.csv')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('--------SVR:----------')
     svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    datas = load_csv_data('./datas/1.csv')
+    datas = load_csv_data('./datas/150.csv')
     data_process_logger.info('testing')
     test_datas(datas, svr_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/100.csv')
+    datas = load_csv_data('./datas/200.csv')
     test_datas(datas, svr_mod)
