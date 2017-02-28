@@ -153,11 +153,13 @@ def test_datas(input_datas, model):
     input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] < 0 else -1)
     xlist = [a[3] for a in input_ranked_list]
     ylist = model.predict(xlist)
-    index_ylist = [(i, ylist[i]) for i in range(len(ylist))]
+    index_ylist = [(i, ylist[i], input_ranked_list[i][2]) for i in
+                   range(len(ylist))]  # (origin_rank, predict_score, origin_score)
     ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] < 0 else -1)
     for i in range(len(ranked_index_ylist)):
-        data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s' % (
-            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
+        data_process_logger.info('pre: %s\t origin: %s\t delta: %s\npredict_score: %s\torigin_score: %s' % (
+            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
+            ranked_index_ylist[i][2]))
         if abs((i - ranked_index_ylist[i][0])) > 700 and i < 35:
             error_num += 1
     data_process_logger.info("error num is %s" % (error_num))
@@ -221,23 +223,23 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_5'
+    model_tag = 'norm_sample_10000'
     train_datas = []
 
-    for i in range(1, 11):
-        print 'loading %s file' % i
-        datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
-        train_datas += datas
-    # random sample the train datas
-    data_process_logger.info('random sampling...')
-    SAMPLE_SIZE = 5000
-    random.shuffle(train_datas)
-    train_datas = train_datas[:SAMPLE_SIZE]
-    # start training
-    output_gbrt_path = './models/gbrt_%s.model' % model_tag
-    output_svr_path = './models/svr_%s.model' % model_tag
-    train_svr_model(train_datas, output_svr_path)
-    train_gbrt_model(train_datas, output_gbrt_path)
+    # for i in range(1, 21):
+    #     print 'loading %s file' % i
+    #     datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
+    #     train_datas += datas
+    # # random sample the train datas
+    # data_process_logger.info('random sampling...')
+    # SAMPLE_SIZE = 10000
+    # random.shuffle(train_datas)
+    # train_datas = train_datas[:SAMPLE_SIZE]
+    # # start training
+    # output_gbrt_path = './models/gbrt_%s.model' % model_tag
+    # output_svr_path = './models/svr_%s.model' % model_tag
+    # train_svr_model(train_datas, output_svr_path)
+    # train_gbrt_model(train_datas, output_gbrt_path)
 
     # print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
@@ -269,7 +271,7 @@ if __name__ == '__main__':
     data_process_logger.info('testing')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/150.csv')
+    datas = load_csv_data('./datas/200.csv')
     test_datas(datas, gbrt_mod)
     data_process_logger.info('--------SVR:----------')
     svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
@@ -277,5 +279,5 @@ if __name__ == '__main__':
     data_process_logger.info('testing')
     test_datas(datas, svr_mod)
     data_process_logger.info('===============')
-    datas = load_csv_data('./datas/150.csv')
+    datas = load_csv_data('./datas/200.csv')
     test_datas(datas, svr_mod)
