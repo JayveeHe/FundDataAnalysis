@@ -24,10 +24,14 @@ from logger_utils import data_process_logger
 
 
 def load_csv_data(csv_path, normalize=True):
+    from sklearn import preprocessing
     with open(csv_path, 'rb') as fin:
         datas = []
         temp_list = []
         score_list = []
+        date_list = []
+        id_list = []
+        vec_list = []
         for line in fin:
             line = line.strip()
             tmp = line.split(',')
@@ -36,15 +40,24 @@ def load_csv_data(csv_path, normalize=True):
             score = eval(tmp[2])
             score_list.append(score)
             vec_value = [eval(a) for a in tmp[3:]]
+            vec_list.append(vec_value)
+            date_list.append(trade_date)
+            id_list.append(stock_id)
             temp_list.append((stock_id, trade_date, score, vec_value))
         if not normalize:
             return temp_list
         else:
-            avg = np.mean(score_list)
-            std = np.std(score_list)
-            for item in temp_list:
-                normalize_score = (item[2] - avg) / std
-                datas.append((item[0], item[1], normalize_score, item[3]))
+            score_scale = preprocessing.scale(score_list)
+            score_scale_list = list(score_scale)
+            vec_scale = preprocessing.scale(vec_list)
+            vec_scale_list = list(vec_scale)
+            for i in range(len(id_list)):
+                datas.append((id_list[i],date_list[i],score_scale_list[i],list(vec_scale_list[i])))
+#            avg = np.mean(score_list)
+#            std = np.std(score_list)
+#            for item in temp_list:
+#                normalize_score = (item[2] - avg) / std
+#                datas.append((item[0], item[1], normalize_score, item[3]))
             return datas
 
 
@@ -65,7 +78,7 @@ def train_gbrt_model(input_datas, output_path='./models/gbrt_model.mod', n_estim
     return gbrt_model
 
 
-def train_svr_model(input_datas, output_path='./models/svr_model.mod', C=1.0, cache_size=200, coef0=0.0, degree=3,
+def train_svr_model(input_datas, output_path='./models/svr_model.mod', C=10, cache_size=200, coef0=0.0, degree=3,
                     epsilon=0.1, gamma=0.0001,
                     kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False):
     from sklearn.svm import SVR
@@ -156,11 +169,11 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
         origin_rank_list.append(buyer_list[i][0])
         total_error += abs((buyer_list[i][0] - i))
     mean_rank = np.mean(origin_rank_list)
-    print 'mean_rank = %s' % mean_rank
-    mean_rank_rate = mean_rank / len(origin_rank_list)
-    print 'mean_rank_rate = %s' % mean_rank_rate
+    data_process_logger.info('mean_rank = %s' % mean_rank)
+    mean_rank_rate = mean_rank / len(ranked_index_ylist)
+    data_process_logger.info('mean_rank_rate = %s' % mean_rank_rate)
     std_rank = np.std(origin_rank_list)
-    print 'std_rank = %s' % std_rank
+    data_process_logger.info('std_rank = %s' % std_rank)
     if mean_rank <= threshold * len(ranked_index_ylist):
         # if total_error <= threshold:
         return -1
@@ -201,9 +214,10 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_50'
+    model_tag = 'norm_5'
     train_datas = []
-    for i in range(1, 51):
+
+    for i in range(1, 6):
         print 'loading %s file' % i
         datas = load_csv_data('./datas/%s.csv' % i)
         train_datas += datas
