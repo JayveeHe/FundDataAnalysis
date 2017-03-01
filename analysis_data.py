@@ -254,20 +254,21 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_sample_100000'
+    model_tag = 'norm_sample_80000'
     train_datas = []
 
-    for i in range(1, 101):
-        print 'loading %s file' % i
+    for i in range(1, 51):
+        data_process_logger.info('loading %s file' % i)
         datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
         train_datas += datas
     # dump normalized train datas
-    cPickle.dump(train_datas, open('./datas/norm_datas.dat', 'wb'))
+    cPickle.dump(train_datas, open('./datas/norm_datas/50_norm_datas.dat', 'wb'))
     # load train normalized train datas
-    train_datas = Pickle.load(open('./datas/norm_datas.dat', 'rb'))
+    data_process_logger.info('loading datas')
+    train_datas = cPickle.load(open('./datas/50_norm_datas.dat', 'rb'))
     # random sample the train datas
-    data_process_logger.info('random sampling...')
-    SAMPLE_SIZE = 100000
+    SAMPLE_SIZE = 80000
+    data_process_logger.info('random sampling %s obs...' % SAMPLE_SIZE)
     random.shuffle(train_datas)
     train_datas = train_datas[:SAMPLE_SIZE]
     # start training
