@@ -68,6 +68,37 @@ def load_csv_data(csv_path, normalize=True):
             return datas
 
 
+def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', n_estimators=500):
+    """
+    使用LightGBM进行训练
+    Args:
+        input_datas: load_csv_data函数的返回值
+
+    Returns:
+
+    """
+    import lightgbm as lgb
+    # param = {'num_leaves': 31, 'num_trees': 100, 'objective': 'binary'}
+    # num_round = 10
+    data_process_logger.info('start training lightgbm')
+    # train
+    gbm = lgb.LGBMRegressor(objective='regression',
+                            num_leaves=31,
+                            learning_rate=0.05,
+                            n_estimators=20)
+    label_set = []
+    vec_set = []
+    for i in range(len(input_datas)):
+        label_set.append(input_datas[i][2])
+        vec_set.append(input_datas[i][3])
+    data_process_logger.info('training lightgbm')
+    gbm.fit(vec_set, label_set)
+    data_process_logger.info('saving lightgbm')
+    with open(output_path, 'wb') as fout:
+        pickle.dump(gbm, fout)
+    return gbm
+
+
 def train_gbrt_model(input_datas, output_path='./models/gbrt_model.mod', n_estimators=500, loss='lad', subsample=0.7,
                      max_depth=4, max_leaf_nodes=10):
     label_set = []
@@ -223,23 +254,26 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_sample_grid_40000'
+    model_tag = 'norm_sample_20000'
     train_datas = []
 
-    for i in range(1, 101):
+    for i in range(1, 11):
         print 'loading %s file' % i
         datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
         train_datas += datas
     # random sample the train datas
     data_process_logger.info('random sampling...')
-    SAMPLE_SIZE = 40000
+    SAMPLE_SIZE = 20000
     random.shuffle(train_datas)
     train_datas = train_datas[:SAMPLE_SIZE]
     # start training
-    #output_gbrt_path = './models/gbrt_%s.model' % model_tag
-    #output_svr_path = './models/svr_%s.model' % model_tag
-    #train_svr_model(train_datas, output_svr_path)
-    #train_gbrt_model(train_datas, output_gbrt_path)
+    # output_gbrt_path = './models/gbrt_%s.model' % model_tag
+    # output_svr_path = './models/svr_%s.model' % model_tag
+    output_lightgbm_path = './models/lightgbm_%s.model' % model_tag
+    # train_svr_model(train_datas, output_svr_path)
+    # train_gbrt_model(train_datas, output_gbrt_path)
+
+    train_with_lightgbm(train_datas, output_lightgbm_path)
 
     # print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
@@ -260,34 +294,49 @@ if __name__ == '__main__':
     # timators gbrt_mod = train_model(train_datas)
     # # model_tag = '50'
     # ------- grid ------
-    vec_set = [a[3] for a in train_datas]
-    label_set = [a[2] for a in train_datas]
-    train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
-    
+    # vec_set = [a[3] for a in train_datas]
+    # label_set = [a[2] for a in train_datas]
+    # train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
+
     # end = time.time()
     # print "spend the time %s" % (end - start)
     ## xlist = [a[3] for a in datas[100:200]]
     ## ylist = [a[2] for a in datas[100:200]]
     ## cross_valid(xlist, ylist, gbrt_mod)
-    gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
-    data_process_logger.info('--------gbrt:----------')
-    data_process_logger.info('using model: %s/models/gbrt_%s.model' % (project_path, model_tag))
-    data_process_logger.info('testing file: /datas/350.csv')
-    datas = load_csv_data('./datas/350.csv')
+
+    # --------- Testing -------
+    a = 200
+    b = 150
+    # gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
+    # data_process_logger.info('--------gbrt:----------')
+    # data_process_logger.info('using model: %s/models/gbrt_%s.model' % (project_path, model_tag))
+    # data_process_logger.info('testing file: /datas/%s.csv' % a)
+    # datas = load_csv_data('./datas/%s.csv' % a)
+    # data_process_logger.info('testing')
+    # test_datas(datas, gbrt_mod)
+    # data_process_logger.info('===============')
+    # data_process_logger.info('testing file: /datas/%s.csv' % b)
+    # datas = load_csv_data('./datas/%s.csv' % b)
+    # test_datas(datas, gbrt_mod)
+    # data_process_logger.info('--------SVR:----------')
+    # data_process_logger.info('using model: %s/models/svr_%s.model' % (project_path, model_tag))
+    # svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
+    # data_process_logger.info('testing file: /datas/%s.csv' % a)
+    # datas = load_csv_data('./datas/%s.csv' % a)
+    # data_process_logger.info('testing')
+    # test_datas(datas, svr_mod)
+    # data_process_logger.info('===============')
+    # data_process_logger.info('testing file: /datas/%s.csv' % b)
+    # datas = load_csv_data('./datas/%s.csv' % b)
+    # test_datas(datas, svr_mod)
+    data_process_logger.info('--------LightGBM:----------')
+    data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (project_path, model_tag))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (project_path, model_tag), 'rb'))
+    data_process_logger.info('testing file: /datas/%s.csv' % a)
+    datas = load_csv_data('./datas/%s.csv' % a)
     data_process_logger.info('testing')
-    test_datas(datas, gbrt_mod)
+    test_datas(datas, lightgbm_mod)
     data_process_logger.info('===============')
-    data_process_logger.info('testing file: /datas/250.csv')
-    datas = load_csv_data('./datas/250.csv')
-    test_datas(datas, gbrt_mod)
-    data_process_logger.info('--------SVR:----------')
-    data_process_logger.info('using model: %s/models/svr_%s.model' % (project_path, model_tag))
-    svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    data_process_logger.info('testing file: /datas/350.csv')
-    datas = load_csv_data('./datas/350.csv')
-    data_process_logger.info('testing')
-    test_datas(datas, svr_mod)
-    data_process_logger.info('===============')
-    data_process_logger.info('testing file: /datas/250.csv')
-    datas = load_csv_data('./datas/250.csv')
-    test_datas(datas, svr_mod)
+    data_process_logger.info('testing file: /datas/%s.csv' % b)
+    datas = load_csv_data('./datas/%s.csv' % b)
+    test_datas(datas, lightgbm_mod)
