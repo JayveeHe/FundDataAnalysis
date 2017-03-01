@@ -16,6 +16,7 @@ from sklearn import grid_search
 from sklearn.cross_validation import cross_val_score
 from sklearn.ensemble import GradientBoostingRegressor
 import numpy as np
+from sklearn.grid_search import GridSearchCV
 
 project_path = os.path.dirname(os.path.abspath(__file__))
 print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
@@ -45,7 +46,7 @@ def load_csv_data(csv_path, normalize=True):
             date_list.append(trade_date)
             id_list.append(stock_id)
             temp_list.append((stock_id, trade_date, score, vec_value))
-        # all not normalize    
+        # all not normalize
         if not normalize:
             avg = np.mean(score_list)
             std = np.std(score_list)
@@ -72,6 +73,8 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
     """
     使用LightGBM进行训练
     Args:
+        n_estimators:
+        output_path:
         input_datas: load_csv_data函数的返回值
 
     Returns:
@@ -86,6 +89,9 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
                             num_leaves=31,
                             learning_rate=0.05,
                             n_estimators=20)
+    params_grid = {'max_bin': [128, 255, 400, 500], 'num_leaves': [21, 31, 41],
+                   'learning_rate': [0.01, 0.1, 0.005], 'n_estimators': [11, 31, 51, 101]}
+    gbm = GridSearchCV(gbm, params_grid)
     label_set = []
     vec_set = []
     for i in range(len(input_datas)):
@@ -93,6 +99,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
         vec_set.append(input_datas[i][3])
     data_process_logger.info('training lightgbm')
     gbm.fit(vec_set, label_set)
+    data_process_logger.info('Best parameters found by grid search are:', gbm.best_params_)
     data_process_logger.info('saving lightgbm')
     with open(output_path, 'wb') as fout:
         pickle.dump(gbm, fout)
@@ -179,24 +186,26 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
     print cv
 
 
-def test_datas_wrapper(input_files,model):
+def test_datas_wrapper(input_files, model):
     '''
     input:(file_names,model)
     output: mean rank rate
     '''
     mean_rank_rates = []
     for i in input_files:
-        input_datas =load_csv_data('./datas/%s.csv' % i)
-        mean_rank_rate = test_datas(input_datas,model)
+        input_datas = load_csv_data('./datas/%s.csv' % i)
+        mean_rank_rate = test_datas(input_datas, model)
         mean_rank_rates.append(mean_rank_rate)
     mean_rank_rate = np.mean(mean_rank_rates)
     std_rank_rate = np.std(mean_rank_rates)
-    data_process_logger.info('all input files mean rank rate is %s, all input files std is %s ' % (mean_rank_rate,std_rank_rate))
+    data_process_logger.info(
+        'all input files mean rank rate is %s, all input files std is %s ' % (mean_rank_rate, std_rank_rate))
+
 
 def test_datas(input_datas, model):
     input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] < 0 else -1)
     xlist = [a[3] for a in input_ranked_list]
-    pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path,'rb'))
+    pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path, 'rb'))
     xlist = list(pca_mod.transform(xlist))
     ylist = model.predict(xlist)
     index_ylist = [(i, ylist[i]) for i in range(len(ylist))]
@@ -205,6 +214,7 @@ def test_datas(input_datas, model):
         data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s' % (
             i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
     mean_rank_rate = result_validation(ranked_index_ylist)
+
 
 def result_validation(ranked_index_ylist, N=50, threshold=0.35):
     buyer_list = ranked_index_ylist[:N]
@@ -253,20 +263,21 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_sample_80000'
+    model_tag = 'norm_sample_50000'
     train_datas = []
 
-    for i in range(1, 51):
+    for i in range(1, 21):
         data_process_logger.info('loading %s file' % i)
         datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
         train_datas += datas
     # dump normalized train datas
-    cPickle.dump(train_datas, open('./datas/norm_datas/50_norm_datas.dat', 'wb'))
+    data_process_logger.info('dumping norm datas...')
+    cPickle.dump(train_datas, open('%s/datas/norm_datas/20_norm_datas.dat' % project_path, 'wb'))
     # load train normalized train datas
-    data_process_logger.info('loading datas')
-    train_datas = cPickle.load(open('./datas/50_norm_datas.dat', 'rb'))
+    data_process_logger.info('loading datas...')
+    train_datas = cPickle.load(open('%s/datas/norm_datas/20_norm_datas.dat' % project_path, 'rb'))
     # random sample the train datas
-    SAMPLE_SIZE = 80000
+    SAMPLE_SIZE = 50000
     data_process_logger.info('random sampling %s obs...' % SAMPLE_SIZE)
     random.shuffle(train_datas)
     train_datas = train_datas[:SAMPLE_SIZE]
