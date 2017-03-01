@@ -179,27 +179,32 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
     print cv
 
 
+def test_datas_wrapper(input_files,model):
+    '''
+    input:(file_names,model)
+    output: mean rank rate
+    '''
+    mean_rank_rates = []
+    for i in input_files:
+        input_datas =load_csv_data('./datas/%s.csv' % i)
+        mean_rank_rate = test_datas(input_datas,model)
+        mean_rank_rates.append(mean_rank_rate)
+    mean_rank_rate = np.mean(mean_rank_rates)
+    std_rank_rate = np.std(mean_rank_rates)
+    data_process_logger.info('all input files mean rank rate is %s, all input files std is %s ' % (mean_rank_rate,std_rank_rate))
+
 def test_datas(input_datas, model):
-    error_num = 0
     input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] < 0 else -1)
     xlist = [a[3] for a in input_ranked_list]
+    pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path,'rb'))
+    xlist = list(pca_mod.transform(xlist))
     ylist = model.predict(xlist)
-    index_ylist = [(i, ylist[i], input_ranked_list[i][2]) for i in
-                   range(len(ylist))]  # (origin_rank, predict_score, origin_score)
+    index_ylist = [(i, ylist[i]) for i in range(len(ylist))]
     ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] < 0 else -1)
     for i in range(len(ranked_index_ylist)):
-        data_process_logger.info('pre: %s\t origin: %s\t delta: %s\npredict_score: %s\torigin_score: %s' % (
-            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
-            ranked_index_ylist[i][2]))
-        if abs((i - ranked_index_ylist[i][0])) > 700 and i < 35:
-            error_num += 1
-    data_process_logger.info("error num is %s" % (error_num))
-    gap = result_validation(ranked_index_ylist)
-    if gap == -1:
-        data_process_logger.info("happiness,the result is OK!")
-    else:
-        data_process_logger.info("sad,the result is bad, the gap is %s" % (gap))
-
+        data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s' % (
+            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1]))
+    mean_rank_rate = result_validation(ranked_index_ylist)
 
 def result_validation(ranked_index_ylist, N=50, threshold=0.35):
     buyer_list = ranked_index_ylist[:N]
@@ -212,13 +217,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
     data_process_logger.info('mean_rank = %s' % mean_rank)
     mean_rank_rate = mean_rank / len(ranked_index_ylist)
     data_process_logger.info('mean_rank_rate = %s' % mean_rank_rate)
-    std_rank = np.std(origin_rank_list)
-    data_process_logger.info('std_rank = %s' % std_rank)
-    if mean_rank <= threshold * len(ranked_index_ylist):
-        # if total_error <= threshold:
-        return -1
-    else:
-        return (total_error - threshold * len(ranked_index_ylist)) / float(threshold * len(ranked_index_ylist))
+    return mean_rank_rate
 
 
 def normalize_data(input_data):
