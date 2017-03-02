@@ -88,14 +88,14 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
     params = {
         'boosting_type': 'gbdt',
         'objective': 'regression_l2',
-        'num_leaves': 128,
-        'learning_rate': 0.001,
+        'num_leaves': 31,
+        'learning_rate': 0.002,
         'feature_fraction': 0.9,
         'bagging_fraction': 0.8,
         'bagging_freq': 5,
         'verbose': 0,
         'metric': 'l1,l2,huber',
-        'num_threads': 2
+        'num_threads': 12
     }
     # gbm = lgb.LGBMRegressor(objective='regression_l2',
     #                         num_leaves=31,
@@ -111,7 +111,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
         vec_set.append(input_datas[i][3])
     data_process_logger.info('training lightgbm')
     train_set = lgb.Dataset(vec_set, label_set)
-    gbm = lgb.train(params, train_set, num_boost_round=2000, early_stopping_rounds=50, valid_sets=[train_set])
+    gbm = lgb.train(params, train_set, num_boost_round=40000, early_stopping_rounds=50, valid_sets=[train_set])
     # gbm.fit()
     # data_process_logger.info('Best parameters found by grid search are: %s' % gbm.best_params_)
     data_process_logger.info('saving lightgbm')
@@ -226,10 +226,10 @@ def test_datas(input_datas, model):
     ylist = model.predict(xlist)
     index_ylist = [(i, ylist[i], origin_score_list[i]) for i in range(len(ylist))]
     ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] < 0 else -1)
-    for i in range(len(ranked_index_ylist)):
-        data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
-            i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
-            ranked_index_ylist[i][2]))
+    # for i in range(len(ranked_index_ylist)):
+        # data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
+        #    i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
+        #    ranked_index_ylist[i][2]))
     mean_rank_rate = result_validation(ranked_index_ylist)
     return mean_rank_rate
 
@@ -281,21 +281,21 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'norm_sample_20000'
+    model_tag = 'iter40000_norm_sample_400000'
     train_datas = []
 
-    # for i in range(1, 21):
-    #     data_process_logger.info('loading %s file' % i)
-    #     datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
-    #     train_datas += datas
-    # # dump normalized train datas
+    for i in range(1, 401):
+        data_process_logger.info('loading %s file' % i)
+        datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
+        train_datas += datas
+    # dump normalized train datas
     # data_process_logger.info('dumping norm datas...')
     # cPickle.dump(train_datas, open('%s/datas/norm_datas/20_norm_datas.dat' % project_path, 'wb'))
     # load train normalized train datas
-    data_process_logger.info('loading datas...')
-    train_datas = cPickle.load(open('%s/datas/norm_datas/10_norm_datas.dat' % project_path, 'rb'))
+    # data_process_logger.info('loading datas...')
+    # train_datas = cPickle.load(open('%s/datas/norm_datas/100_norm_datas.dat' % project_path, 'rb'))
     # random sample the train datas
-    SAMPLE_SIZE = 20000
+    SAMPLE_SIZE = 400000
     data_process_logger.info('random sampling %s obs...' % SAMPLE_SIZE)
     random.shuffle(train_datas)
     train_datas = train_datas[:SAMPLE_SIZE]
@@ -338,9 +338,9 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    a = 150
-    b = 200
-    c = 2
+    a = 550
+    b = 500
+    c = 150
     # gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
     # data_process_logger.info('--------gbrt:----------')
     # data_process_logger.info('using model: %s/models/gbrt_%s.model' % (project_path, model_tag))
@@ -378,4 +378,5 @@ if __name__ == '__main__':
     data_process_logger.info('testing file: /datas/%s.csv' % c)
     datas = load_csv_data('./datas/%s.csv' % c)
     test_datas(datas, lightgbm_mod)
-    # test_datas_wrapper([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], lightgbm_mod)
+    test_datas_wrapper(range(20,30), lightgbm_mod)
+    test_datas_wrapper(range(400,420), lightgbm_mod)
