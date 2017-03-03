@@ -23,6 +23,7 @@ print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
 sys.path.append(project_path)
 
 from utils.logger_utils import data_process_logger
+from utils.logger_utils import data_analysis_logger
 
 
 def load_csv_data(csv_path, normalize=True):
@@ -89,10 +90,10 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
         'boosting_type': 'gbdt',
         'objective': 'regression_l2',
         'num_leaves': 31,
-        'learning_rate': 0.002,
+        'learning_rate': 0.001,
         'feature_fraction': 0.9,
-        'bagging_fraction': 0.8,
-        'bagging_freq': 5,
+        'bagging_fraction': 0.7,
+        'bagging_freq': 20,
         'verbose': 0,
         'metric': 'l1,l2,huber',
         'num_threads': 12
@@ -111,7 +112,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod', 
         vec_set.append(input_datas[i][3])
     data_process_logger.info('training lightgbm')
     train_set = lgb.Dataset(vec_set, label_set)
-    gbm = lgb.train(params, train_set, num_boost_round=40000, early_stopping_rounds=50, valid_sets=[train_set])
+    gbm = lgb.train(params, train_set, num_boost_round=60000, early_stopping_rounds=50, valid_sets=[train_set])
     # gbm.fit()
     # data_process_logger.info('Best parameters found by grid search are: %s' % gbm.best_params_)
     data_process_logger.info('saving lightgbm')
@@ -210,6 +211,8 @@ def test_datas_wrapper(input_files, model):
         input_datas = load_csv_data('./datas/%s.csv' % i)
         data_process_logger.info('testing file: %s.csv' % i)
         mean_rank_rate = test_datas(input_datas, model)
+        if mean_rank_rate >= 0.4:
+            data_analysis_logger.info('the file number is %s' % i)
         mean_rank_rates.append(mean_rank_rate)
     mean_rank_rate = np.mean(mean_rank_rates)
     std_rank_rate = np.std(mean_rank_rates)
@@ -281,34 +284,34 @@ def normalize_data(input_data):
 
 if __name__ == '__main__':
     start = time.time()
-    model_tag = 'iter40000_norm_sample_400000'
-    train_datas = []
+    model_tag = 'iter40000_norm_sample_700000'
+    #train_datas = []
 
-    for i in range(1, 401):
-        data_process_logger.info('loading %s file' % i)
-        datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
-        train_datas += datas
-    # dump normalized train datas
-    # data_process_logger.info('dumping norm datas...')
-    # cPickle.dump(train_datas, open('%s/datas/norm_datas/20_norm_datas.dat' % project_path, 'wb'))
-    # load train normalized train datas
-    # data_process_logger.info('loading datas...')
-    # train_datas = cPickle.load(open('%s/datas/norm_datas/100_norm_datas.dat' % project_path, 'rb'))
-    # random sample the train datas
-    SAMPLE_SIZE = 400000
-    data_process_logger.info('random sampling %s obs...' % SAMPLE_SIZE)
-    random.shuffle(train_datas)
-    train_datas = train_datas[:SAMPLE_SIZE]
+    #for i in range(1, 501):
+    #    data_process_logger.info('loading %s file' % i)
+    #    datas = load_csv_data('./datas/%s.csv' % i, normalize=True)
+    #    train_datas += datas
+     # dump normalized train datas
+   # data_process_logger.info('dumping norm datas...')
+   # cPickle.dump(train_datas, open('%s/datas/norm_datas/20_norm_datas.dat' % project_path, 'wb'))
+   # load train normalized train datas
+   # data_process_logger.info('loading datas...')
+   # train_datas = cPickle.load(open('%s/datas/norm_datas/100_norm_datas.dat' % project_path, 'rb'))
+   # random sample the train datas
+    #SAMPLE_SIZE = 700000
+    #data_process_logger.info('random sampling %s obs...' % SAMPLE_SIZE)
+    #random.shuffle(train_datas)
+   # train_datas = train_datas[:SAMPLE_SIZE]
     # start training
     # output_gbrt_path = './models/gbrt_%s.model' % model_tag
     # output_svr_path = './models/svr_%s.model' % model_tag
-    output_lightgbm_path = './models/lightgbm_%s.model' % model_tag
+   # output_lightgbm_path = './models/lightgbm_%s.model' % model_tag
     # train_svr_model(train_datas, output_svr_path)
     # train_gbrt_model(train_datas, output_gbrt_path)
 
-    train_with_lightgbm(train_datas, output_lightgbm_path)
+    #train_with_lightgbm(train_datas, output_lightgbm_path)
 
-    # print '====================== 20 normalize test set'
+    ## print '====================== 20 normalize test set'
     # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
     # datas = load_csv_data('./datas/4.csv', normalize=True)
     # test_datas(datas, gbrt_mod)
@@ -339,7 +342,7 @@ if __name__ == '__main__':
 
     # --------- Testing -------
     a = 550
-    b = 500
+    b = 560
     c = 150
     # gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
     # data_process_logger.info('--------gbrt:----------')
@@ -364,19 +367,24 @@ if __name__ == '__main__':
     # datas = load_csv_data('./datas/%s.csv' % b)
     # test_datas(datas, svr_mod)
     data_process_logger.info('--------LightGBM:----------')
-    data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (project_path, model_tag))
+   # data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (project_path, model_tag))
     lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (project_path, model_tag), 'rb'))
-    data_process_logger.info('testing file: /datas/%s.csv' % a)
-    datas = load_csv_data('./datas/%s.csv' % a)
-    data_process_logger.info('testing')
-    test_datas(datas, lightgbm_mod)
-    data_process_logger.info('===============')
-    data_process_logger.info('testing file: /datas/%s.csv' % b)
-    datas = load_csv_data('./datas/%s.csv' % b)
-    test_datas(datas, lightgbm_mod)
-    data_process_logger.info('===============')
-    data_process_logger.info('testing file: /datas/%s.csv' % c)
-    datas = load_csv_data('./datas/%s.csv' % c)
-    test_datas(datas, lightgbm_mod)
-    test_datas_wrapper(range(20,30), lightgbm_mod)
-    test_datas_wrapper(range(400,420), lightgbm_mod)
+   # data_process_logger.info('test trianing file')
+   # test_datas_wrapper(range(1,100),lightgbm_mod)
+    data_process_logger.info('test test file')
+    test_datas_wrapper(range(501,600),lightgbm_mod)
+    #data_process_logger.info('testing file: /datas/%s.csv' % 570)
+    #3datas = load_csv_data('./datas/%s.csv' % 570)
+    #3data_process_logger.info('testing')
+    #3test_datas(datas, lightgbm_mod)
+    #3data_process_logger.info('===============')
+    #3data_process_logger.info('testing file: /datas/%s.csv' % 580)
+    #3datas = load_csv_data('./datas/%s.csv' % 580)
+    #3test_datas(datas, lightgbm_mod)
+    #3data_process_logger.info('===============')
+    #3data_process_logger.info('testing file: /datas/%s.csv' % 590)
+    #3datas = load_csv_data('./datas/%s.csv' % 590)
+    #3test_datas(datas, lightgbm_mod)
+    #3test_datas_wrapper(range(20,30), lightgbm_mod)
+    #3test_datas_wrapper(range(560,600), lightgbm_mod)
+    #3test_datas_wrapper(range(550,560),lightgbm_mod)
