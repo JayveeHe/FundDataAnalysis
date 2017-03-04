@@ -20,7 +20,8 @@ from utils.logger_utils import data_process_logger
 
 
 def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
-                        num_boost_round=60000, early_stopping_rounds=50, params=None):
+                        num_boost_round=60000, early_stopping_rounds=30,
+                        learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num), params=None):
     """
     使用LightGBM进行训练
     Args:
@@ -43,7 +44,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
             'boosting_type': 'gbdt',
             'objective': 'regression_l2',
             'num_leaves': 31,
-            'learning_rate': 0.001,
+            'boosting': 'dart',
             'feature_fraction': 0.9,
             'bagging_fraction': 0.7,
             'bagging_freq': 20,
@@ -67,6 +68,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     train_set = lgb.Dataset(vec_set, label_set)
     gbm = lgb.train(params, train_set, num_boost_round=num_boost_round,
                     early_stopping_rounds=early_stopping_rounds,
+                    learning_rates=learning_rates,
                     valid_sets=[train_set])
     # gbm.fit()
     # data_process_logger.info('Best parameters found by grid search are: %s' % gbm.best_params_)
