@@ -112,7 +112,7 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    model_tag = 'iter10000_norm_combined_sample_20000'
+    model_tag = 'iter10000_norm_sample_20000'
     a = 550
     b = 560
     c = 150
@@ -144,7 +144,8 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    test_datas_wrapper(range(1, 11), lightgbm_mod, is_combined=True, normalize=True)
+    # print  list(lightgbm_mod.feature_importances_)
+    test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
     # data_process_logger.info('testing file: /datas/%s.csv' % 570)
     # 3datas = load_csv_data('./datas/%s.csv' % 570)
     # 3data_process_logger.info('testing')
