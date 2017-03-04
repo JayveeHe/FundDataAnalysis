@@ -39,12 +39,14 @@ def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
         data_process_logger.info('testing file: %s.csv' % i)
         mean_rank_rate = test_datas(input_datas, model)
         if mean_rank_rate >= 0.4:
-            data_analysis_logger.info('the file number is %s' % i)
+            data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
         mean_rank_rates.append(mean_rank_rate)
     mean_rank_rate = np.mean(mean_rank_rates)
     std_rank_rate = np.std(mean_rank_rates)
+    var_rank = np.var(mean_rank_rates)
     data_process_logger.info(
-        'all input files mean rank rate is %s, all input files std is %s ' % (mean_rank_rate, std_rank_rate))
+        'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
+            mean_rank_rate, std_rank_rate, var_rank))
 
 
 def test_datas(input_datas, model):
