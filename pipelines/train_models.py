@@ -7,6 +7,7 @@ Created by jayvee on 17/3/4.
 https://github.com/JayveeHe
 """
 import cPickle
+import multiprocessing
 import os
 import random
 
@@ -23,16 +24,29 @@ from utils.logger_utils import data_process_logger
 from utils.model_utils import train_with_lightgbm
 
 if __name__ == '__main__':
-    model_tag = 'iter30000_norm_200000full'
+    model_tag = 'dart_iter30000_norm_200000full'
     train_datas = []
 
+    # load with multi-processor
+    process_count = 12
+    proc_pool = multiprocessing.Pool(process_count)
+    multi_results = []
     for i in range(200, 301):
-        data_process_logger.info('loading %s file' % i)
-        datas = load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, i), normalize=True, is_combine=False)
+        # data_process_logger.info('loading %s file' % i)
+        csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
+        data_res = proc_pool.apply_async(load_csv_data, args=(csv_path, True, True))
+        multi_results.append(data_res)
+        # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
+        # train_datas += datas
+    proc_pool.close()
+    proc_pool.join()
+    # fetch datas from pool
+    for i in xrange(len(multi_results)):
+        datas = multi_results[i].get()
         train_datas += datas
     # dump normalized train datas
     data_process_logger.info('dumping norm datas...')
-    cPickle.dump(train_datas, open('%s/datas/norm_datas/200_norm_datas_full.dat' % PROJECT_PATH, 'wb'), protocol=3)
+    cPickle.dump(train_datas, open('%s/datas/norm_datas/200_norm_datas_full.dat' % PROJECT_PATH, 'wb'), protocol=2)
     # load train normalized train datas
     # data_process_logger.info('loading datas...')
     # train_datas = cPickle.load(open('%s/datas/norm_datas/10_norm_datas_full.dat' % PROJECT_PATH, 'rb'))
@@ -51,7 +65,7 @@ if __name__ == '__main__':
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
     train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=30000,
-                        learning_rates=lambda iter_num: 0.7 * (0.99 ** iter_num))
+                        learning_rates=lambda iter_num: max(0.7 * (0.99 ** iter_num), 0.0005))
     # --------- Testing -------
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))

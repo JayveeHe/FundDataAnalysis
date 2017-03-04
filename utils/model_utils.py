@@ -21,10 +21,12 @@ from utils.logger_utils import data_process_logger
 
 def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
                         num_boost_round=60000, early_stopping_rounds=30,
-                        learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num), params=None):
+                        learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
+                        params=None):
     """
     使用LightGBM进行训练
     Args:
+        learning_rates:
         early_stopping_rounds: early stop次数
         num_boost_round: 迭代次数
         params: dict形式的参数
@@ -41,14 +43,14 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # train
     if not params:
         params = {
-            'boosting_type': 'gbdt',
+            'boosting_type': 'dart',
             'objective': 'regression_l2',
             'num_leaves': 15,
-            'boosting': 'dart',
+            'boosting': 'gbdt',
             'feature_fraction': 0.7,
             'bagging_fraction': 0.6,
             'bagging_freq': 20,
-            'verbose': 1,
+            'verbose': 0,
             'is_unbalance': False,
             'metric': 'l1,l2,huber',
             'num_threads': 12

@@ -8,6 +8,8 @@ import os
 import sys
 import numpy as np
 
+from utils.logger_utils import data_process_logger
+
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
@@ -26,6 +28,7 @@ def load_csv_data(csv_path, normalize=True, is_combine=False):
     """
     from sklearn import preprocessing
     with open(csv_path, 'rb') as fin:
+        data_process_logger.info('loading file: %s' % csv_path)
         datas = []
         temp_list = []
         score_list = []
