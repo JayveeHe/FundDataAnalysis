@@ -14,10 +14,9 @@ import cPickle
 from sklearn.cross_validation import cross_val_score
 import numpy as np
 
-
-project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
-sys.path.append(project_path)
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
+sys.path.append(PROJECT_PATH)
 
 from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
@@ -36,7 +35,7 @@ def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
     """
     mean_rank_rates = []
     for i in input_files:
-        input_datas = load_csv_data('./datas/%s.csv' % i, is_combine=is_combined, normalize=normalize)
+        input_datas = load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, i), is_combine=is_combined, normalize=normalize)
         data_process_logger.info('testing file: %s.csv' % i)
         mean_rank_rate = test_datas(input_datas, model)
         if mean_rank_rate >= 0.4:
@@ -138,8 +137,8 @@ if __name__ == '__main__':
     # datas = load_csv_data('./datas/%s.csv' % b)
     # test_datas(datas, svr_mod)
     data_process_logger.info('--------LightGBM:----------')
-    data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (project_path, model_tag))
-    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (project_path, model_tag), 'rb'))
+    data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
