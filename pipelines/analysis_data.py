@@ -29,14 +29,14 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
     print cv
 
 
-def test_datas_wrapper(input_files, model):
-    '''
+def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
+    """
     input:(file_names,model)
     output: mean rank rate
-    '''
+    """
     mean_rank_rates = []
     for i in input_files:
-        input_datas = load_csv_data('./datas/%s.csv' % i)
+        input_datas = load_csv_data('./datas/%s.csv' % i, is_combine=is_combined, normalize=normalize)
         data_process_logger.info('testing file: %s.csv' % i)
         mean_rank_rate = test_datas(input_datas, model)
         if mean_rank_rate >= 0.4:
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    model_tag = 'iter40000_norm_sample_700000'
+    model_tag = 'iter40000_norm_combined_sample_500000'
     a = 550
     b = 560
     c = 150
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    test_datas_wrapper(range(501, 600), lightgbm_mod)
+    test_datas_wrapper(range(501, 600), lightgbm_mod, is_combined=True, normalize=True)
     # data_process_logger.info('testing file: /datas/%s.csv' % 570)
     # 3datas = load_csv_data('./datas/%s.csv' % 570)
     # 3data_process_logger.info('testing')
