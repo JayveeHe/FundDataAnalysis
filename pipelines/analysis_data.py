@@ -14,12 +14,12 @@ import cPickle
 from sklearn.cross_validation import cross_val_score
 import numpy as np
 
-from pipelines.data_preprocess import load_csv_data
 
 project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, project_path)
 sys.path.append(project_path)
 
+from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
 from utils.logger_utils import data_analysis_logger
 
