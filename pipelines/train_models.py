@@ -13,12 +13,12 @@ import random
 
 import sys
 
-from pipelines.analysis_data import test_datas_wrapper
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
 
+from pipelines.analysis_data import test_datas_wrapper
 from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
 from utils.model_utils import train_with_lightgbm
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     proc_pool.close()
     proc_pool.join()
     # fetch datas from pool
+    data_process_logger.info('combining csv datas...')
     for i in xrange(len(multi_results)):
         datas = multi_results[i].get()
         train_datas += datas
