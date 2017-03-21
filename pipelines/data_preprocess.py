@@ -12,11 +12,13 @@ import cPickle
 import numpy as np
 from sklearn.preprocessing import Imputer
 
-from utils.logger_utils import data_process_logger
-
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
+
+import multiprocessing
+
+from utils.logger_utils import data_process_logger
 
 
 def load_csv_data(csv_path, normalize=True, is_combine=False):
@@ -149,8 +151,6 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path):
         data_process_logger.info('%s done' % fin_csv_path)
         return transformed_datas
 
-    pass
-
 
 def parallel_inferring(file_number_list, process_count=12):
     """
@@ -158,7 +158,6 @@ def parallel_inferring(file_number_list, process_count=12):
     Returns:
 
     """
-    import multiprocessing
     data_process_logger.info('Start parallel inferring, process count = %s' % process_count)
     proc_pool = multiprocessing.Pool(process_count)
     # multi_results = []
