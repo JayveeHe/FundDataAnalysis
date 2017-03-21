@@ -4,9 +4,13 @@
 Created by jayvee on 17/3/3.
 https://github.com/JayveeHe
 """
+import csv
 import os
 import sys
+
+import cPickle
 import numpy as np
+from sklearn.preprocessing import Imputer
 
 from utils.logger_utils import data_process_logger
 
@@ -104,5 +108,80 @@ def normalize_data(input_data):
     return output_data
 
 
+def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path):
+    """
+    处理NaN数据,并将处理后的数据分别存储为csv与pickle文件
+    Args:
+        fin_csv_path:
+        fout_csv_path:
+        fout_pickle_path:
+
+    Returns:
+
+    """
+    with open(fin_csv_path, 'rb') as fin_csv, \
+            open(fout_csv_path, 'wb') as fout_csv, \
+            open(fout_pickle_path, 'wb') as fout_pickle:
+        origin_datas = []
+        reader = csv.reader(fin_csv)
+        writer = csv.writer(fout_csv)
+        # count = 0
+        data_process_logger.info('start reading %s' % fin_csv_path)
+        for line in reader:
+            vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
+            origin_datas.append(vec_value)
+            # data_process_logger.info('handled line %s' % count)
+            # count += 1
+        # inferring missing data
+        imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
+        imp.fit(origin_datas)
+        transformed_datas = imp.transform(origin_datas)
+        # writting transformed datas
+        data_process_logger.info('start writting %s' % fout_csv_path)
+        for row in transformed_datas:
+            writer.writerow(row)
+            # data_process_logger.info('line %s written' % count)
+            # count += 1
+            # result = ','.join(row)
+            # fout_csv.write(result + '\n')
+        data_process_logger.info('start dumping %s' % fout_pickle_path)
+        cPickle.dump(transformed_datas, fout_pickle, protocol=2)
+        data_process_logger.info('%s done' % fin_csv_path)
+        return transformed_datas
+
+    pass
+
+
+def parallel_inferring(file_number_list, process_count=12):
+    """
+    并行化进行数据清理
+    Returns:
+
+    """
+    import multiprocessing
+    data_process_logger.info('Start parallel inferring, process count = %s' % process_count)
+    proc_pool = multiprocessing.Pool(process_count)
+    # multi_results = []
+    for i in file_number_list:
+        # data_process_logger.info('loading %s file' % i)
+        # csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
+        fin_csv_path = '%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, i)
+        fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, i)
+        fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, i)
+        data_res = proc_pool.apply_async(infer_missing_datas, args=(fin_csv_path, fout_csv_path, fout_pickle_path))
+        # multi_results.append(data_res)
+        # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
+        # train_datas += datas
+    proc_pool.close()
+    proc_pool.join()
+    data_process_logger.info('Done with %s files' % len(file_number_list))
+
+
 if __name__ == '__main__':
-    print len(load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, 1), is_combine=True))
+    # print len(load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, 1), is_combine=True))
+    # infer_missing_datas(fin_csv_path='%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, 1),
+    #                     fout_csv_path='%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, 1),
+    #                     fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
+    # pickle_data = cPickle.load()
+    # print len(pickle_data)
+    parallel_inferring(file_number_list=range(1, 769), process_count=12)
