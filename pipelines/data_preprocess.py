@@ -164,7 +164,7 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
         return transformed_datas
 
 
-def parallel_inferring(file_number_list, process_count=12):
+def parallel_inferring(file_number_list, process_count=12, is_norm=True):
     """
     并行化进行数据清理
     Returns:
@@ -177,10 +177,14 @@ def parallel_inferring(file_number_list, process_count=12):
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
         fin_csv_path = '%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, i)
-        fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans_norm.csv' % (PROJECT_PATH, i)
-        fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+        if is_norm:
+            fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans_norm.csv' % (PROJECT_PATH, i)
+            fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+        else:
+            fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, i)
+            fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, i)
         data_res = proc_pool.apply_async(infer_missing_datas,
-                                         args=(fin_csv_path, fout_csv_path, fout_pickle_path, True, True))
+                                         args=(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm, True))
         # multi_results.append(data_res)
         # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
         # train_datas += datas
@@ -196,4 +200,4 @@ if __name__ == '__main__':
     #                     fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
     # pickle_data = cPickle.load()
     # print len(pickle_data)
-    parallel_inferring(file_number_list=range(1, 769), process_count=12)
+    parallel_inferring(file_number_list=range(1, 769), process_count=12, is_norm=True)

@@ -49,15 +49,42 @@ def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
             mean_rank_rate, std_rank_rate, var_rank))
 
 
+def test_quant_data_wrapper(input_file_numbers, model, normalize=True):
+    """
+    input:(file_names,model)
+    output: mean rank rate
+    """
+    mean_rank_rates = []
+    for i in input_file_numbers:
+        if normalize:
+            fin_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+        else:
+            fin_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, i)
+        with open(fin_path, 'rb') as fin_data_file:
+            input_datas = cPickle.load(fin_data_file)
+            data_process_logger.info('testing file: %s' % fin_path)
+            mean_rank_rate = test_datas(input_datas, model)
+            if mean_rank_rate >= 0.4:
+                data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
+            mean_rank_rates.append(mean_rank_rate)
+    mean_rank_rate = np.mean(mean_rank_rates)
+    std_rank_rate = np.std(mean_rank_rates)
+    var_rank = np.var(mean_rank_rates)
+    data_process_logger.info(
+        'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
+            mean_rank_rate, std_rank_rate, var_rank))
+
+
 def test_datas(input_datas, model):
-    input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[2] - y[2] < 0 else -1)
-    xlist = [a[3] for a in input_ranked_list]
-    origin_score_list = [a[2] for a in input_ranked_list]
+    # input_datas = list(input_datas)
+    input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
+    xlist = [a[2:] for a in input_ranked_list]
+    origin_score_list = [a[1] for a in input_ranked_list]
     # pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path, 'rb'))
     # xlist = list(pca_mod.transform(xlist))
     ylist = model.predict(xlist)
     index_ylist = [(i, ylist[i], origin_score_list[i]) for i in range(len(ylist))]
-    ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] < 0 else -1)
+    ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
     # for i in range(len(ranked_index_ylist)):
     # data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
     #    i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
@@ -112,7 +139,7 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    model_tag = 'iter10000_norm_sample_20000'
+    model_tag = 'Quant_Data_300'
     a = 550
     b = 560
     c = 150
@@ -144,8 +171,9 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
+    test_quant_data_wrapper([1,2,3], lightgbm_mod, normalize=False)
     # print  list(lightgbm_mod.feature_importances_)
-    test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
+    # test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
     # data_process_logger.info('testing file: /datas/%s.csv' % 570)
     # 3datas = load_csv_data('./datas/%s.csv' % 570)
     # 3data_process_logger.info('testing')

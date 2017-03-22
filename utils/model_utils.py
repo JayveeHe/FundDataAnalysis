@@ -43,7 +43,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # train
     if not params:
         params = {
-            'boosting_type': 'dart',
+            'boosting_type': 'gbdt',
             'objective': 'regression_l2',
             'num_leaves': 15,
             'boosting': 'gbdt',
@@ -64,9 +64,13 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # gbm = GridSearchCV(gbm, params_grid, n_jobs=2)
     label_set = []
     vec_set = []
-    for i in range(len(input_datas)):
-        label_set.append(input_datas[i][2])
-        vec_set.append(input_datas[i][3])
+    # for i in range(len(input_datas)):
+    #     label_set.append(input_datas[i][2])
+    #     vec_set.append(input_datas[i][3])
+
+    # Quant-data process
+    label_set = input_datas[:, 1]
+    vec_set = input_datas[:, 2:]
     data_process_logger.info('training lightgbm')
     data_process_logger.info('params: \n%s' % params)
     train_set = lgb.Dataset(vec_set, label_set)
@@ -79,6 +83,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     data_process_logger.info('saving lightgbm')
     with open(output_path, 'wb') as fout:
         cPickle.dump(gbm, fout)
+        data_process_logger.info('saved model: %s' % output_path)
     return gbm
 
 
