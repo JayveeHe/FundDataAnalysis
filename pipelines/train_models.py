@@ -59,8 +59,14 @@ def train_lightGBM_new_data(train_file_number_list):
     train_datas = tmp_data
     data_process_logger.info('combining datas...')
     for i in xrange(1, len(multi_results)):
+        data_process_logger.info('combining No.%s data' % i)
         datas = multi_results[i].get()
-        train_datas = np.row_stack((train_datas, datas))
+        try:
+            train_datas = np.row_stack((train_datas, datas))
+        except Exception, e:
+            data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
+            continue
+
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
     train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=30000, early_stopping_rounds=150,
