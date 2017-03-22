@@ -100,7 +100,7 @@ def test_old_datas():
     cPickle.dump(train_datas, open('%s/datas/norm_datas/200_norm_combined_datas_full.dat' % PROJECT_PATH, 'wb'),
                  protocol=2)
     # load train normalized train datas
-    # data_process_logger.info('loading datas...')x
+    # data_process_logger.info('loading datas...')
     # train_datas = cPickle.load(open('%s/datas/norm_datas/200_norm_datas_full.dat' % PROJECT_PATH, 'rb'))
     # random sample the train datas
     # SAMPLE_SIZE = 20000
@@ -116,9 +116,8 @@ def test_old_datas():
 
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
-    num_total_iter = 3000
-    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=150,
-                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num / (num_total_iter * 0.01)), 0.0005))
+    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=30000, early_stopping_rounds=150,
+                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num), 0.0005))
     # --------- Testing -------
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
