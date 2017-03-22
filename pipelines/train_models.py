@@ -39,7 +39,7 @@ def train_lightGBM_new_data(train_file_number_list):
     """
 
     # train_file_number_list = range(1, 300)
-    model_tag = 'Quant_Data_300_norm'
+    model_tag = 'Quant_Data_100_norm'
     # load with multi-processor
     process_count = 12
     proc_pool = multiprocessing.Pool(process_count)
@@ -69,8 +69,9 @@ def train_lightGBM_new_data(train_file_number_list):
 
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
-    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=30000, early_stopping_rounds=150,
-                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num), 0.0005))
+    num_total_iter = 3000
+    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=150,
+                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num / (num_total_iter * 0.001)), 0.0005))
 
 
 def test_old_datas():
@@ -99,7 +100,7 @@ def test_old_datas():
     cPickle.dump(train_datas, open('%s/datas/norm_datas/200_norm_combined_datas_full.dat' % PROJECT_PATH, 'wb'),
                  protocol=2)
     # load train normalized train datas
-    # data_process_logger.info('loading datas...')
+    # data_process_logger.info('loading datas...')x
     # train_datas = cPickle.load(open('%s/datas/norm_datas/200_norm_datas_full.dat' % PROJECT_PATH, 'rb'))
     # random sample the train datas
     # SAMPLE_SIZE = 20000
@@ -115,8 +116,9 @@ def test_old_datas():
 
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
-    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=30000, early_stopping_rounds=150,
-                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num), 0.0005))
+    num_total_iter = 3000
+    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=150,
+                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num / (num_total_iter * 0.01)), 0.0005))
     # --------- Testing -------
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
@@ -131,4 +133,4 @@ def test_old_datas():
 
 if __name__ == '__main__':
     pass
-    train_lightGBM_new_data(range(1, 301))
+    train_lightGBM_new_data(range(1, 101))
