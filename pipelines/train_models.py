@@ -39,7 +39,7 @@ def train_lightGBM_new_data(train_file_number_list):
     """
 
     # train_file_number_list = range(1, 300)
-    model_tag = 'Quant_Data_300_norm'
+    model_tag = 'Quant_Data_200_norm'
     # load with multi-processor
     process_count = 12
     proc_pool = multiprocessing.Pool(process_count)
@@ -131,4 +131,4 @@ def test_old_datas():
 
 if __name__ == '__main__':
     pass
-    train_lightGBM_new_data(range(1, 301))
+    train_lightGBM_new_data(range(1, 201))
