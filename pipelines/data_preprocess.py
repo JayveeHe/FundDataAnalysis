@@ -10,6 +10,7 @@ import sys
 
 import cPickle
 import numpy as np
+from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -110,10 +111,12 @@ def normalize_data(input_data):
     return output_data
 
 
-def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path):
+def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=False, is_norm_score=True):
     """
     处理NaN数据,并将处理后的数据分别存储为csv与pickle文件
     Args:
+        is_norm: 是否进行标准化
+        is_norm_score: 是否对score进行标准化
         fin_csv_path:
         fout_csv_path:
         fout_pickle_path:
@@ -130,14 +133,23 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path):
         # count = 0
         data_process_logger.info('start reading %s' % fin_csv_path)
         for line in reader:
-            vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
-            origin_datas.append(vec_value)
+            single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
+            origin_datas.append(single_vec_value)
             # data_process_logger.info('handled line %s' % count)
             # count += 1
         # inferring missing data
         imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
         imp.fit(origin_datas)
         transformed_datas = imp.transform(origin_datas)
+        if is_norm:
+            # standardising datas
+            stock_ids = transformed_datas[:, 0]
+            stock_scores = transformed_datas[:, 1]
+            vec_values = transformed_datas[:, 2:]
+            scaled_vec_values = preprocessing.scale(vec_values)
+            if is_norm_score:
+                stock_scores = preprocessing.scale(stock_scores)
+            transformed_datas = np.column_stack((stock_ids, stock_scores, scaled_vec_values))
         # writting transformed datas
         data_process_logger.info('start writting %s' % fout_csv_path)
         for row in transformed_datas:
@@ -165,9 +177,10 @@ def parallel_inferring(file_number_list, process_count=12):
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
         fin_csv_path = '%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, i)
-        fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, i)
-        fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, i)
-        data_res = proc_pool.apply_async(infer_missing_datas, args=(fin_csv_path, fout_csv_path, fout_pickle_path))
+        fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans_norm.csv' % (PROJECT_PATH, i)
+        fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+        data_res = proc_pool.apply_async(infer_missing_datas,
+                                         args=(fin_csv_path, fout_csv_path, fout_pickle_path, True, True))
         # multi_results.append(data_res)
         # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
         # train_datas += datas

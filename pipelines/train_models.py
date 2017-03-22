@@ -23,6 +23,16 @@ from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
 from utils.model_utils import train_with_lightgbm
 
+
+def train_lightGBM_new_data():
+    """
+    利用新数据(2899维)训练lightGBM模型
+
+    Returns:
+
+    """
+
+
 if __name__ == '__main__':
     model_tag = 'dart_iter30000_norm_combined_400000full'
     train_datas = []
