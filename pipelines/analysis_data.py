@@ -139,7 +139,7 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    model_tag = 'Quant_Data_200_norm'
+    model_tag = 'Quant_Data_100_norm'
     a = 550
     b = 560
     c = 150

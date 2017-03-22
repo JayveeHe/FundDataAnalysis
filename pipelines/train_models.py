@@ -71,7 +71,7 @@ def train_lightGBM_new_data(train_file_number_list):
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
     num_total_iter = 3000
     train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=150,
-                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num / (num_total_iter * 0.001)), 0.0005))
+                        learning_rates=lambda iter_num: max(0.8 * (0.99 ** iter_num / (num_total_iter * 0.0025)), 0.0008))
 
 
 def test_old_datas():
