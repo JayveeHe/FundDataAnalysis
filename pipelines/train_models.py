@@ -69,9 +69,22 @@ def train_lightGBM_new_data(train_file_number_list):
 
     output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
-    num_total_iter = 30000
-    train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=151,
-                        learning_rates=lambda iter_num: max(0.8 * (0.95 ** iter_num / (num_total_iter * 0.05)), 0.008),
+    num_total_iter = 40000
+    params = {
+        'objective': 'regression_l2',
+        'num_leaves': 128,
+        'boosting': 'dart',
+        'feature_fraction': 0.9,
+        'bagging_fraction': 0.9,
+        'bagging_freq': 50,
+        'verbose': 0,
+        'is_unbalance': False,
+        'metric': 'l1,l2,huber',
+        'num_threads': process_count
+    }
+    train_with_lightgbm(train_datas, output_lightgbm_path, params=params, num_boost_round=num_total_iter,
+                        early_stopping_rounds=201,
+                        learning_rates=lambda iter_num: max(0.8 * (0.98 ** iter_num / (num_total_iter * 0.05)), 0.008),
                         thread_num=process_count)
 
 
@@ -133,4 +146,4 @@ def test_old_datas():
 
 if __name__ == '__main__':
     pass
-    train_lightGBM_new_data(range(1, 2 + 1))
+    train_lightGBM_new_data(range(1, 100 + 1))

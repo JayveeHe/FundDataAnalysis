@@ -22,19 +22,20 @@ from utils.logger_utils import data_process_logger
 def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
                         num_boost_round=60000, early_stopping_rounds=30,
                         learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
-                        params=None,thread_num=12):
+                        params=None, thread_num=12):
     """
     使用LightGBM进行训练
     Args:
-        learning_rates:
+        thread_num: 并行训练数
+        learning_rates: 学习率函数
         early_stopping_rounds: early stop次数
         num_boost_round: 迭代次数
         params: dict形式的参数
-        output_path:
         input_datas: load_csv_data函数的返回值
+        output_path: 模型输出位置
 
     Returns:
-
+        训练后的模型实例
     """
     import lightgbm as lgb
     # param = {'num_leaves': 31, 'num_trees': 100, 'objective': 'binary'}
@@ -45,7 +46,7 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
         params = {
             'objective': 'regression_l2',
             'num_leaves': 128,
-            'boosting': 'dart',
+            'boosting': 'gbdt',
             'feature_fraction': 0.9,
             'bagging_fraction': 0.7,
             'bagging_freq': 100,
