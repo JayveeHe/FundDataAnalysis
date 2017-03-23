@@ -22,7 +22,7 @@ from utils.logger_utils import data_process_logger
 def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
                         num_boost_round=60000, early_stopping_rounds=30,
                         learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
-                        params=None):
+                        params=None,thread_num=12):
     """
     使用LightGBM进行训练
     Args:
@@ -47,13 +47,13 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
             'objective': 'regression_l2',
             'num_leaves': 15,
             'boosting': 'gbdt',
-            'feature_fraction': 0.7,
-            'bagging_fraction': 0.6,
-            'bagging_freq': 20,
+            'feature_fraction': 0.9,
+            'bagging_fraction': 0.7,
+            'bagging_freq': 100,
             'verbose': 0,
             'is_unbalance': False,
             'metric': 'l1,l2,huber',
-            'num_threads': 12
+            'num_threads': thread_num
         }
     # gbm = lgb.LGBMRegressor(objective='regression_l2',
     #                         num_leaves=31,
