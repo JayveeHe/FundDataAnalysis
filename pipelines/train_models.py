@@ -39,7 +39,7 @@ def train_lightGBM_new_data(train_file_number_list):
     """
 
     # train_file_number_list = range(1, 300)
-    model_tag = 'Quant_Data_%s_norm'%(len(train_file_number_list)) 
+    model_tag = 'Quant_Data_%s_norm' % (len(train_file_number_list))
     # load with multi-processor
     process_count = 14
     proc_pool = multiprocessing.Pool(process_count)
@@ -71,7 +71,8 @@ def train_lightGBM_new_data(train_file_number_list):
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
     num_total_iter = 30000
     train_with_lightgbm(train_datas, output_lightgbm_path, num_boost_round=num_total_iter, early_stopping_rounds=151,
-                        learning_rates=lambda iter_num: max(0.8 * (0.95 ** iter_num / (num_total_iter * 0.05)), 0.0008), thread_num=process_count)
+                        learning_rates=lambda iter_num: max(0.8 * (0.95 ** iter_num / (num_total_iter * 0.05)), 0.008),
+                        thread_num=process_count)
 
 
 def test_old_datas():
@@ -132,4 +133,4 @@ def test_old_datas():
 
 if __name__ == '__main__':
     pass
-    train_lightGBM_new_data(range(1, 21))
+    train_lightGBM_new_data(range(1, 2 + 1))

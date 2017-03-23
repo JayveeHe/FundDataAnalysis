@@ -43,10 +43,9 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # train
     if not params:
         params = {
-            'boosting_type': 'gbdt',
             'objective': 'regression_l2',
-            'num_leaves': 15,
-            'boosting': 'gbdt',
+            'num_leaves': 128,
+            'boosting': 'dart',
             'feature_fraction': 0.9,
             'bagging_fraction': 0.7,
             'bagging_freq': 100,
