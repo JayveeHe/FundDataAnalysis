@@ -98,10 +98,11 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
     total_error = 0
     origin_rank_list = []
     for i in range(len(buyer_list)):
-        origin_rank_list.append(buyer_list[i][0])
+        origin_rank_list.append(buyer_list[i][0] + 1)
         total_error += abs((buyer_list[i][0] - i))
     mean_rank = np.mean(origin_rank_list)
     data_process_logger.info('mean_rank = %s' % mean_rank)
+    data_process_logger.info('mean error = %s' % ((0.0 + total_error) / N))
     mean_rank_rate = mean_rank / len(ranked_index_ylist)
     data_process_logger.info('mean_rank_rate = %s' % mean_rank_rate)
     return mean_rank_rate
@@ -171,7 +172,7 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    test_quant_data_wrapper(range(1,10+1), lightgbm_mod, normalize=True)
+    test_quant_data_wrapper(range(1, 10 + 1), lightgbm_mod, normalize=True)
     # print  list(lightgbm_mod.feature_importances_)
     # test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
     # data_process_logger.info('testing file: /datas/%s.csv' % 570)
