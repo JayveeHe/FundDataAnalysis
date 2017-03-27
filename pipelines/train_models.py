@@ -6,11 +6,15 @@
 Created by jayvee on 17/3/4.
 https://github.com/JayveeHe
 """
+from __future__ import division
+
 import cPickle
 import multiprocessing
 import os
 
 import sys
+
+from lightgbm import Booster
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -30,16 +34,23 @@ def load_pickle_datas(tmp_pickle_path):
         return pickle_data
 
 
-def train_lightGBM_new_data(train_file_number_list):
+def train_lightGBM_new_data(train_file_number_list, former_model=None, output_lightgbm_path=None, save_rounds=1000,
+                            num_total_iter=100):
     """
     利用新数据(2899维)训练lightGBM模型
+
+    Args:
+        num_total_iter: 总迭代次数
+        save_rounds: 存储的迭代间隔
+        output_lightgbm_path: 模型的保存路径
+        train_file_number_list: 训练文件序号列表
+        former_model: 如果需要从已有模型继续训练,则导入
 
     Returns:
 
     """
 
     # train_file_number_list = range(1, 300)
-    model_tag = 'Quant_Data_%s_norm' % (len(train_file_number_list))
     # load with multi-processor
     process_count = 14
     proc_pool = multiprocessing.Pool(process_count)
@@ -66,23 +77,26 @@ def train_lightGBM_new_data(train_file_number_list):
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
             continue
-
-    output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
+    if not output_lightgbm_path:
+        model_tag = 'Quant_Data_%s_norm' % (len(train_file_number_list))
+        output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
-    num_total_iter = 40000
+    # num_total_iter = 55
     params = {
         'objective': 'regression_l2',
         'num_leaves': 64,
         'boosting': 'gbdt',
-        'feature_fraction': 0.85,
+        'feature_fraction': 0.8,
         'bagging_fraction': 0.7,
-        'bagging_freq': 10,
+        'bagging_freq': 100,
         'verbose': 0,
         'is_unbalance': False,
         'metric': 'l1,l2,huber',
         'num_threads': process_count
     }
-    train_with_lightgbm(train_datas, output_lightgbm_path, params=params, num_boost_round=num_total_iter,
+    train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
+                        output_path=output_lightgbm_path, params=params,
+                        num_boost_round=num_total_iter,
                         early_stopping_rounds=301,
                         learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)), 0.008),
                         thread_num=process_count)
@@ -146,4 +160,27 @@ def test_old_datas():
 
 if __name__ == '__main__':
     pass
-    train_lightGBM_new_data(range(100, 250 + 1))
+    lightgbm_mod = None
+    # 继续训练
+    model_tag = 'New_Quant_Data_600-768_norm'
+    # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
+    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag), 'rb'))
+    params = {
+        'objective': 'regression_l2',
+        'num_leaves': 64,
+        'boosting': 'gbdt',
+        'feature_fraction': 0.7,
+        'bagging_fraction': 0.7,
+        'bagging_freq': 100,
+        'verbose': 0,
+        'is_unbalance': False,
+        'metric': 'l1,l2,huber',
+        'num_threads': 12
+    }
+    # lightgbm_mod = Booster(
+    #     model_file='/Users/jayvee/CS/Python/FundDataAnalysis/models/lightgbm_Quant_Data_5_norm_continued.model')
+
+    # training
+    train_lightGBM_new_data(range(600, 768), former_model=None,
+                            output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+                            save_rounds=200, num_total_iter=50000)

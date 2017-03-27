@@ -18,6 +18,7 @@ PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
 
+from lightgbm import Booster
 from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
 from utils.logger_utils import data_analysis_logger
@@ -140,7 +141,7 @@ if __name__ == '__main__':
     ## cross_valid(xlist, ylist, gbrt_mod)
 
     # --------- Testing -------
-    model_tag = 'Quant_Data_151_norm'
+    model_tag = 'Quant_Data_5_norm_continued'
     a = 550
     b = 560
     c = 150
@@ -168,11 +169,27 @@ if __name__ == '__main__':
     # test_datas(datas, svr_mod)
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+
+    # params = {
+    #     'objective': 'regression_l2',
+    #     'num_leaves': 64,
+    #     'boosting': 'gbdt',
+    #     'feature_fraction': 0.7,
+    #     'bagging_fraction': 0.7,
+    #     'bagging_freq': 100,
+    #     'verbose': 0,
+    #     'is_unbalance': False,
+    #     'metric': 'l1,l2,huber',
+    #     'num_threads': 12
+    # }
+    lightgbm_mod = Booster(
+        model_file='%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag))
+
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    test_quant_data_wrapper(range(500, 550 + 1), lightgbm_mod, normalize=True)
+    test_quant_data_wrapper(range(1, 10 + 1), lightgbm_mod, normalize=True)
     # print  list(lightgbm_mod.feature_importances_)
     # test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
     # data_process_logger.info('testing file: /datas/%s.csv' % 570)

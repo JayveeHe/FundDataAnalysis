@@ -4,13 +4,16 @@
 Created by jayvee on 17/3/4.
 https://github.com/JayveeHe
 """
+from __future__ import division
 import os
 import sys
 
 import cPickle
 import numpy as np
+from lightgbm import Booster
 from sklearn import grid_search
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.externals import joblib
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -19,19 +22,21 @@ sys.path.append(PROJECT_PATH)
 from utils.logger_utils import data_process_logger
 
 
-def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
+def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_path='./models/lightgbm_model.mod',
                         num_boost_round=60000, early_stopping_rounds=30,
                         learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
                         params=None, thread_num=12):
     """
     使用LightGBM进行训练
     Args:
+        save_rounds: 保存的迭代间隔
+        input_datas: load_csv_data函数的返回值
+        former_model: 如果需要从已有模型继续训练,则导入
         thread_num: 并行训练数
         learning_rates: 学习率函数
         early_stopping_rounds: early stop次数
         num_boost_round: 迭代次数
         params: dict形式的参数
-        input_datas: load_csv_data函数的返回值
         output_path: 模型输出位置
 
     Returns:
@@ -62,8 +67,8 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # params_grid = {'max_bin': [128, 255, 400], 'num_leaves': [21, 31],
     #                'learning_rate': [0.01, 0.1, 0.005], 'n_estimators': [11, 15, 21]}
     # gbm = GridSearchCV(gbm, params_grid, n_jobs=2)
-    label_set = []
-    vec_set = []
+    # label_set = []
+    # vec_set = []
     # for i in range(len(input_datas)):
     #     label_set.append(input_datas[i][2])
     #     vec_set.append(input_datas[i][3])
@@ -73,17 +78,53 @@ def train_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     vec_set = input_datas[:, 2:]
     data_process_logger.info('training lightgbm')
     data_process_logger.info('params: \n%s' % params)
-    train_set = lgb.Dataset(vec_set, label_set)
-    gbm = lgb.train(params, train_set, num_boost_round=num_boost_round,
+    train_set = lgb.Dataset(vec_set, label_set, free_raw_data=False)
+    # 处理存储间隔
+    # gbm = former_model
+    tmp_model = former_model
+    tmp_num = num_boost_round
+    while tmp_num > save_rounds > 0:
+        gbm = lgb.train(params, train_set, num_boost_round=save_rounds,
+                        early_stopping_rounds=early_stopping_rounds,
+                        learning_rates=learning_rates,
+                        valid_sets=[train_set],
+                        init_model=tmp_model)
+        # m_json = gbm.dump_model()
+        data_process_logger.info('saving lightgbm during training')
+        tmp_num -= save_rounds
+        # save
+        # gbm.save_model(output_path)
+
+        # print('Save model')
+        # joblib.dump(gbm, output_path)
+        # data_process_logger.info('saved model: %s' % output_path)
+        # print('Load model')
+        # gbm2 = joblib.load('gbm.pkl')
+
+        with open(output_path, 'wb') as fout:
+            cPickle.dump(gbm, fout, protocol=2)
+        print 'saved model: %s' % output_path
+        # tmp_model = cPickle.load(open(output_path, 'rb'))
+        tmp_model = gbm
+        # tmp_model = Booster(params=params, model_file=output_path)
+        # with open(output_path, 'wb') as fout:
+        #     cPickle.dump(tmp_model, fout)
+    gbm = lgb.train(params, train_set, num_boost_round=tmp_num,
                     early_stopping_rounds=early_stopping_rounds,
                     learning_rates=learning_rates,
-                    valid_sets=[train_set])
+                    valid_sets=[train_set],
+                    init_model=tmp_model)
     # gbm.fit()
     # data_process_logger.info('Best parameters found by grid search are: %s' % gbm.best_params_)
-    data_process_logger.info('saving lightgbm')
+    data_process_logger.info('Final saving lightgbm')
+    # joblib.dump(gbm, output_path)
+    # gbm.save_model(output_path)
+    # tmp_model = Booster(params=params, model_file=output_path)
+    # with open(output_path, 'wb') as fout:
+    #     cPickle.dump(tmp_model, fout)
     with open(output_path, 'wb') as fout:
         cPickle.dump(gbm, fout)
-        data_process_logger.info('saved model: %s' % output_path)
+    data_process_logger.info('saved model: %s' % output_path)
     return gbm
 
 
