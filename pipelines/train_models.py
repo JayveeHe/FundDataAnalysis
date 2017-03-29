@@ -84,15 +84,18 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
     # num_total_iter = 55
     params = {
         'objective': 'regression_l2',
-        'num_leaves': 64,
+        'num_leaves': 7,
         'boosting': 'gbdt',
-        'feature_fraction': 0.8,
-        'bagging_fraction': 0.7,
-        'bagging_freq': 100,
+        'feature_fraction': 0.6,
+        'bagging_fraction': 0.6,
+        'bagging_freq': 50,
         'verbose': 0,
         'is_unbalance': False,
         'metric': 'l1,l2,huber',
-        'num_threads': process_count
+        'num_threads': process_count,
+        'min_data_in_leaf': 80,
+        'lambda_l2': 1.5,
+        'save_binary': True
     }
     train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
                         output_path=output_lightgbm_path, params=params,
@@ -162,25 +165,30 @@ if __name__ == '__main__':
     pass
     lightgbm_mod = None
     # 继续训练
-    model_tag = 'New_Quant_Data_600-768_norm'
+    model_tag = 'New_Quant_Data_500-768_norm_dart'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag), 'rb'))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     params = {
         'objective': 'regression_l2',
         'num_leaves': 64,
         'boosting': 'gbdt',
-        'feature_fraction': 0.7,
-        'bagging_fraction': 0.7,
-        'bagging_freq': 100,
+        'feature_fraction': 0.9,
+        'bagging_fraction': 0.6,
+        'bagging_freq': 50,
         'verbose': 0,
         'is_unbalance': False,
         'metric': 'l1,l2,huber',
-        'num_threads': 12
+        'num_threads': 12,
+        'min_data_in_leaf': 80,
+        'lambda_l2': 0.8,
+        'save_binary': True
     }
     # lightgbm_mod = Booster(
     #     model_file='/Users/jayvee/CS/Python/FundDataAnalysis/models/lightgbm_Quant_Data_5_norm_continued.model')
 
     # training
-    train_lightGBM_new_data(range(600, 768), former_model=None,
+    model_tag = 'New_Quant_Data_500-668_norm_gbdt_7leaves'
+    lightgbm_mod = None
+    train_lightGBM_new_data(range(500, 668), former_model=lightgbm_mod,
                             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-                            save_rounds=200, num_total_iter=50000)
+                            save_rounds=500, num_total_iter=50000)

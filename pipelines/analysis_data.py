@@ -72,8 +72,8 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True):
     std_rank_rate = np.std(mean_rank_rates)
     var_rank = np.var(mean_rank_rates)
     data_process_logger.info(
-        'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
-            mean_rank_rate, std_rank_rate, var_rank))
+        'Tested %s files, all input files mean rank rate is %s, all input files std is %s, var is %s' % (
+            len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
 
 
 def test_datas(input_datas, model):
@@ -110,63 +110,8 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 
 if __name__ == '__main__':
-    # start = time.time()
-    ## print '====================== 20 normalize test set'
-    # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
-    # datas = load_csv_data('./datas/4.csv', normalize=True)
-    # test_datas(datas, gbrt_mod)
-    # print '====================== 20 normalize train set'
-    # gbrt_mod = cPickle.load(open('./models/gbrt_model_%s.mod' % model_tag, 'rb'))
-    # datas = load_csv_data('./datas/310.csv', normalize=True)
-    # test_datas(datas, gbrt_mod)
-    # out_data = normalize_data(train_datas)
-    # for item in out_data:
-    #	print 'item is : %s\t%s\t%s\n'%(item[0],item[2],item[3])
-    # label_set = []
-    # vec_set = []
-    # for i in range(len(train_datas)):
-    #    label_set.append(train_datas[i][2])
-    #    vec_set.append(train_datas[i][3])
-    # timators gbrt_mod = train_model(train_datas)
-    # # model_tag = '50'
-    # ------- grid ------
-    # vec_set = [a[3] for a in train_datas]
-    # label_set = [a[2] for a in train_datas]
-    # train_regression_age_model(input_xlist=vec_set, input_ylist=label_set, model_label=model_tag)
-
-    # end = time.time()
-    # print "spend the time %s" % (end - start)
-    ## xlist = [a[3] for a in datas[100:200]]
-    ## ylist = [a[2] for a in datas[100:200]]
-    ## cross_valid(xlist, ylist, gbrt_mod)
-
     # --------- Testing -------
-    model_tag = 'Quant_Data_5_norm_continued'
-    a = 550
-    b = 560
-    c = 150
-    # gbrt_mod = cPickle.load(open('%s/models/gbrt_%s.model' % (project_path, model_tag), 'rb'))
-    # data_process_logger.info('--------gbrt:----------')
-    # data_process_logger.info('using model: %s/models/gbrt_%s.model' % (project_path, model_tag))
-    # data_process_logger.info('testing file: /datas/%s.csv' % a)
-    # datas = load_csv_data('./datas/%s.csv' % a)
-    # data_process_logger.info('testing')
-    # test_datas(datas, gbrt_mod)
-    # data_process_logger.info('===============')
-    # data_process_logger.info('testing file: /datas/%s.csv' % b)
-    # datas = load_csv_data('./datas/%s.csv' % b)
-    # test_datas(datas, gbrt_mod)
-    # data_process_logger.info('--------SVR:----------')
-    # data_process_logger.info('using model: %s/models/svr_%s.model' % (project_path, model_tag))
-    # svr_mod = cPickle.load(open('%s/models/svr_%s.model' % (project_path, model_tag), 'rb'))
-    # data_process_logger.info('testing file: /datas/%s.csv' % a)
-    # datas = load_csv_data('./datas/%s.csv' % a)
-    # data_process_logger.info('testing')
-    # test_datas(datas, svr_mod)
-    # data_process_logger.info('===============')
-    # data_process_logger.info('testing file: /datas/%s.csv' % b)
-    # datas = load_csv_data('./datas/%s.csv' % b)
-    # test_datas(datas, svr_mod)
+    model_tag = 'New_Quant_Data_500-668_norm_gbdt_7leaves'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -183,27 +128,10 @@ if __name__ == '__main__':
     #     'metric': 'l1,l2,huber',
     #     'num_threads': 12
     # }
-    lightgbm_mod = Booster(
-        model_file='%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag))
-
+    # lightgbm_mod = Booster(
+    #    model_file='%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    test_quant_data_wrapper(range(1, 10 + 1), lightgbm_mod, normalize=True)
-    # print  list(lightgbm_mod.feature_importances_)
-    # test_datas_wrapper([100, 150, 200, 310], lightgbm_mod, is_combined=True, normalize=True)
-    # data_process_logger.info('testing file: /datas/%s.csv' % 570)
-    # 3datas = load_csv_data('./datas/%s.csv' % 570)
-    # 3data_process_logger.info('testing')
-    # 3test_datas(datas, lightgbm_mod)
-    # 3data_process_logger.info('===============')
-    # 3data_process_logger.info('testing file: /datas/%s.csv' % 580)
-    # 3datas = load_csv_data('./datas/%s.csv' % 580)
-    # 3test_datas(datas, lightgbm_mod)
-    # 3data_process_logger.info('===============')
-    # 3data_process_logger.info('testing file: /datas/%s.csv' % 590)
-    # 3datas = load_csv_data('./datas/%s.csv' % 590)
-    # 3test_datas(datas, lightgbm_mod)
-    # 3test_datas_wrapper(range(20,30), lightgbm_mod)
-    # 3test_datas_wrapper(range(560,600), lightgbm_mod)
-    # 3test_datas_wrapper(range(550,560),lightgbm_mod)
+    test_quant_data_wrapper(range(670, 760), lightgbm_mod, normalize=True)
