@@ -176,13 +176,14 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True):
     for i in file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
-        fin_csv_path = '%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, i)
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
+        fin_csv_path = '%s/%s.csv' % (data_root_path, i)
         if is_norm:
-            fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans_norm.csv' % (PROJECT_PATH, i)
-            fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+            fout_csv_path = '%s/transformed_datas/%s_trans_norm.csv' % (data_root_path, i)
+            fout_pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         else:
-            fout_csv_path = '%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, i)
-            fout_pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, i)
+            fout_csv_path = '%s/transformed_datas/%s_trans.csv' % (data_root_path, i)
+            fout_pickle_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
         data_res = proc_pool.apply_async(infer_missing_datas,
                                          args=(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm, True))
         # multi_results.append(data_res)
@@ -200,4 +201,4 @@ if __name__ == '__main__':
     #                     fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
     # pickle_data = cPickle.load()
     # print len(pickle_data)
-    parallel_inferring(file_number_list=range(252, 769), process_count=12, is_norm=True)
+    parallel_inferring(file_number_list=range(1, 1511), process_count=12, is_norm=True)

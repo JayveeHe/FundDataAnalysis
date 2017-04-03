@@ -30,6 +30,7 @@ import numpy as np
 
 def load_pickle_datas(tmp_pickle_path):
     with open(tmp_pickle_path, 'rb') as fin:
+        data_process_logger.info('processing %s'%tmp_pickle_path)
         pickle_data = cPickle.load(fin)
         return pickle_data
 
@@ -58,7 +59,9 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
     for i in train_file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
-        pickle_path = '%s/datas/Quant-Datas/pickle_datas/%s_trans_norm.pickle' % (PROJECT_PATH, i)
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
+        pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
+        data_process_logger.info('add file: %s' % pickle_path)
         data_res = proc_pool.apply_async(load_pickle_datas, args=(pickle_path,))
         multi_results.append(data_res)
         # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
@@ -71,8 +74,8 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
     data_process_logger.info('combining datas...')
     for i in xrange(1, len(multi_results)):
         data_process_logger.info('combining No.%s data' % i)
-        datas = multi_results[i].get()
         try:
+            datas = multi_results[i].get()
             train_datas = np.row_stack((train_datas, datas))
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
@@ -86,8 +89,8 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
         'objective': 'regression_l2',
         'num_leaves': 7,
         'boosting': 'gbdt',
-        'feature_fraction': 0.6,
-        'bagging_fraction': 0.6,
+        'feature_fraction': 0.7,
+        'bagging_fraction': 0.7,
         'bagging_freq': 50,
         'verbose': 0,
         'is_unbalance': False,
@@ -95,7 +98,8 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
         'num_threads': process_count,
         'min_data_in_leaf': 80,
         'lambda_l2': 1.5,
-        'save_binary': True
+        'save_binary': True,
+        'two_round': False
     }
     train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
                         output_path=output_lightgbm_path, params=params,
@@ -165,30 +169,33 @@ if __name__ == '__main__':
     pass
     lightgbm_mod = None
     # 继续训练
-    model_tag = 'New_Quant_Data_500-768_norm_dart'
+    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
-    params = {
-        'objective': 'regression_l2',
-        'num_leaves': 64,
-        'boosting': 'gbdt',
-        'feature_fraction': 0.9,
-        'bagging_fraction': 0.6,
-        'bagging_freq': 50,
-        'verbose': 0,
-        'is_unbalance': False,
-        'metric': 'l1,l2,huber',
-        'num_threads': 12,
-        'min_data_in_leaf': 80,
-        'lambda_l2': 0.8,
-        'save_binary': True
-    }
+    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    # params = {
+    #     'objective': 'regression_l2',
+    #     'num_leaves': 64,
+    #     'boosting': 'gbdt',
+    #     'feature_fraction': 0.9,
+    #     'bagging_fraction': 0.6,
+    #     'bagging_freq': 50,
+    #     'verbose': 0,
+    #     'is_unbalance': False,
+    #     'metric': 'l1,l2,huber',
+    #     'num_threads': 12,
+    #     'min_data_in_leaf': 80,
+    #     'lambda_l2': 0.8,
+    #     'save_binary': True
+    # }
     # lightgbm_mod = Booster(
     #     model_file='/Users/jayvee/CS/Python/FundDataAnalysis/models/lightgbm_Quant_Data_5_norm_continued.model')
 
     # training
-    model_tag = 'New_Quant_Data_500-668_norm_gbdt_7leaves'
+    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000'
     lightgbm_mod = None
-    train_lightGBM_new_data(range(500, 668), former_model=lightgbm_mod,
+    train_lightGBM_new_data(range(860, 940)+range(1075,1145)+range(1195,1245)+range(1295,1345)+range(1460,1510), former_model=lightgbm_mod,
                             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-                            save_rounds=500, num_total_iter=50000)
+                            save_rounds=500, num_total_iter=30000)
+    # train_lightGBM_new_data(range(840, 841), former_model=lightgbm_mod,
+    #                         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+    #                         save_rounds=500, num_total_iter=50000)
