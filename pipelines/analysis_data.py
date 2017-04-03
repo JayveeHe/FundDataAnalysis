@@ -50,7 +50,7 @@ def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
             mean_rank_rate, std_rank_rate, var_rank))
 
 
-def test_quant_data_wrapper(input_file_numbers, model, normalize=True):
+def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
     """
     input:(file_names,model)
     output: mean rank rate
@@ -64,6 +64,9 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True):
         else:
             fin_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
         try:
+            if predict_iteration:
+                model.save_model('tmp_model.txt', num_iteration=predict_iteration)
+                model = Booster(model_file='tmp_model.txt')
             with open(fin_path, 'rb') as fin_data_file:
                 input_datas = cPickle.load(fin_data_file)
                 data_process_logger.info('testing file: %s' % fin_path)
@@ -73,14 +76,14 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True):
                 mean_rank_rates.append(mean_rank_rate)
                 file_number_list.append(i)
         except:
-            data_process_logger.info('test file failed: file path=%s'%(fin_path))
+            data_process_logger.info('test file failed: file path=%s' % (fin_path))
     mean_rank_rate = np.mean(mean_rank_rates)
     std_rank_rate = np.std(mean_rank_rates)
     var_rank = np.var(mean_rank_rates)
     data_process_logger.info(
         'Tested %s files, all input files mean rank rate is %s, all input files std is %s, var is %s' % (
             len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
-    return file_number_list,mean_rank_rates
+    return file_number_list, mean_rank_rates
 
 
 def test_datas(input_datas, model):
@@ -122,27 +125,16 @@ if __name__ == '__main__':
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
-
-    # params = {
-    #     'objective': 'regression_l2',
-    #     'num_leaves': 64,
-    #     'boosting': 'gbdt',
-    #     'feature_fraction': 0.7,
-    #     'bagging_fraction': 0.7,
-    #     'bagging_freq': 100,
-    #     'verbose': 0,
-    #     'is_unbalance': False,
-    #     'metric': 'l1,l2,huber',
-    #     'num_threads': 12
-    # }
     # lightgbm_mod = Booster(
     #    model_file='%s/models/lightgbm_%s_continued.model' % (PROJECT_PATH, model_tag))
     lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    f_numbers,f_rank_rates = test_quant_data_wrapper(range(740,840) + range(940,1040) + range(1145,1195) + range(1245,1295) + range(1345,1445), lightgbm_mod, normalize=True)
+    f_numbers, f_rank_rates = test_quant_data_wrapper(
+        range(740, 840) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
+        normalize=True)
     # save test result to csv
-    with open('%s/pipelines/test_result_%s.csv'%(PROJECT_PATH,len(f_numbers)),'wb') as fout:
+    with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
-            fout.write('%s,%s\n'%(f_numbers[i],f_rank_rates[i]))
+            fout.write('%s,%s\n' % (f_numbers[i], f_rank_rates[i]))

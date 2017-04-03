@@ -30,7 +30,7 @@ import numpy as np
 
 def load_pickle_datas(tmp_pickle_path):
     with open(tmp_pickle_path, 'rb') as fin:
-        data_process_logger.info('processing %s'%tmp_pickle_path)
+        data_process_logger.info('processing %s' % tmp_pickle_path)
         pickle_data = cPickle.load(fin)
         return pickle_data
 
@@ -193,9 +193,11 @@ if __name__ == '__main__':
     # training
     model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000'
     lightgbm_mod = None
-    train_lightGBM_new_data(range(860, 940)+range(1075,1145)+range(1195,1245)+range(1295,1345)+range(1460,1510), former_model=lightgbm_mod,
-                            output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-                            save_rounds=500, num_total_iter=30000)
+    train_lightGBM_new_data(
+        range(860, 940) + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
+        former_model=lightgbm_mod,
+        output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+        save_rounds=500, num_total_iter=30000)
     # train_lightGBM_new_data(range(840, 841), former_model=lightgbm_mod,
     #                         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
     #                         save_rounds=500, num_total_iter=50000)
