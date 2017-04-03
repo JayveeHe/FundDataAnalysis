@@ -57,6 +57,9 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
     """
     mean_rank_rates = []
     file_number_list = []
+    if predict_iteration:
+        model.save_model('tmp_model.txt', num_iteration=predict_iteration)
+        model = Booster(model_file='tmp_model.txt')
     for i in input_file_numbers:
         data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
         if normalize:
@@ -64,9 +67,6 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
         else:
             fin_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
         try:
-            if predict_iteration:
-                model.save_model('tmp_model.txt', num_iteration=predict_iteration)
-                model = Booster(model_file='tmp_model.txt')
             with open(fin_path, 'rb') as fin_data_file:
                 input_datas = cPickle.load(fin_data_file)
                 data_process_logger.info('testing file: %s' % fin_path)
