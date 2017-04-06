@@ -99,7 +99,8 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
         'min_data_in_leaf': 80,
         'lambda_l2': 1.5,
         'save_binary': True,
-        'two_round': False
+        'two_round': False,
+        'max_bin': 127
     }
     train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
                         output_path=output_lightgbm_path, params=params,
@@ -169,9 +170,9 @@ if __name__ == '__main__':
     pass
     lightgbm_mod = None
     # 继续训练
-    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves'
+    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # params = {
     #     'objective': 'regression_l2',
     #     'num_leaves': 64,
@@ -191,10 +192,15 @@ if __name__ == '__main__':
     #     model_file='/Users/jayvee/CS/Python/FundDataAnalysis/models/lightgbm_Quant_Data_5_norm_continued.model')
 
     # training
-    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000'
-    lightgbm_mod = None
+    model_tag = 'New_Quant_Data_refined_norm_gbdt_7leaves_iter30000'
+    # lightgbm_mod = None
+    # train_lightGBM_new_data(
+    #     range(400,500)+range(860, 940) + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
+    #     former_model=lightgbm_mod,
+    #     output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+    #     save_rounds=500, num_total_iter=30000)
     train_lightGBM_new_data(
-        range(860, 940) + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
+        range(400,500)+range(100,200),
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500, num_total_iter=30000)
