@@ -3,3 +3,6 @@
 *.model
 *.mod
 *.pyc
+*.xlsx
+*.pkl
+*.txt
