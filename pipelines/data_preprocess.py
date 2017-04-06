@@ -152,8 +152,8 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
             transformed_datas = np.column_stack((stock_ids, stock_scores, scaled_vec_values))
         # writting transformed datas
         data_process_logger.info('start writting %s' % fout_csv_path)
-        for row in transformed_datas:
-            writer.writerow(row)
+        # for row in transformed_datas:
+        #     writer.writerow(row)
             # data_process_logger.info('line %s written' % count)
             # count += 1
             # result = ','.join(row)
