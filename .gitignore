@@ -6,3 +6,9 @@
 *.xlsx
 *.pkl
 *.txt
+
+*.out
+
+datas/
+log/
+models/

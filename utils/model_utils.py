@@ -78,7 +78,9 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
     vec_set = input_datas[:, 2:]
     data_process_logger.info('training lightgbm')
     data_process_logger.info('params: \n%s' % params)
+    data_process_logger.info('building dataset')
     train_set = lgb.Dataset(vec_set, label_set, free_raw_data=False)
+    data_process_logger.info('complete building dataset')
     # 处理存储间隔
     # gbm = former_model
     tmp_model = former_model
