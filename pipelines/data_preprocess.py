@@ -159,9 +159,9 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
             # result = ','.join(row)
             # fout_csv.write(result + '\n')
         data_process_logger.info('start dumping %s' % fout_pickle_path)
+        transformed_datas = transformed_datas.tolist()
         cPickle.dump(transformed_datas, fout_pickle, protocol=2)
         data_process_logger.info('%s done' % fin_csv_path)
-        transformed_datas = transformed_datas.tolist()
         return transformed_datas
 
 
