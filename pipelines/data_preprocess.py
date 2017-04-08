@@ -132,13 +132,22 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
         origin_datas = []
         reader = csv.reader(fin_csv)
         # writer = csv.writer(fout_csv)
-        # count = 0
+        count = 1
         data_process_logger.info('start reading %s' % fin_csv_path)
+        first_line = next(reader)
+        single_vec_value = [float(i) if i != 'NaN' else np.nan for i in first_line]
+        origin_datas.append(single_vec_value)
         for line in reader:
-            single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
-            origin_datas.append(single_vec_value)
-            # data_process_logger.info('handled line %s' % count)
-            # count += 1
+            if len(line) == len(first_line):
+                single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
+                origin_datas.append(single_vec_value)
+                # data_process_logger.info('handled line %s' % count)
+
+            else:
+                data_process_logger.info(
+                    'casting line: %s in file %s, it has %s features while the first line has %s' % (
+                        count, fin_csv_path, len(line), len(first_line)))
+            count += 1
         # inferring missing data
         imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
         imp.fit(origin_datas)
@@ -161,7 +170,7 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
         # result = ','.join(row)
         # fout_csv.write(result + '\n')
         data_process_logger.info('start dumping %s' % fout_pickle_path)
-        # transformed_datas = transformed_datas.tolist()
+        transformed_datas = transformed_datas.tolist()  # 转为list进行存储
         cPickle.dump(transformed_datas, fout_pickle, protocol=2)
         data_process_logger.info('%s done' % fin_csv_path)
         return transformed_datas
@@ -199,9 +208,9 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True):
 
 if __name__ == '__main__':
     # print len(load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, 1), is_combine=True))
-    infer_missing_datas(fin_csv_path='%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, 1),
-                        fout_csv_path='%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, 1),
-                        fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
+    # infer_missing_datas(fin_csv_path='%s/datas/Quant-Datas/%s.csv' % (PROJECT_PATH, 1),
+    #                     fout_csv_path='%s/datas/Quant-Datas/transformed_datas/%s_trans.csv' % (PROJECT_PATH, 1),
+    #                     fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
     # pickle_data = cPickle.load()
     # print len(pickle_data)
     parallel_inferring(file_number_list=range(1, 1511), process_count=12, is_norm=True)

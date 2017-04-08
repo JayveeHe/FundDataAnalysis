@@ -76,6 +76,7 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
         try:
             datas = multi_results[i].get()
             # train_datas = np.row_stack((train_datas, datas)) # np.2darray
+            # train_datas = np.vstack((train_datas, datas))
             train_datas.extend(datas)
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
@@ -173,26 +174,9 @@ if __name__ == '__main__':
     model_tag = 'Full_gbdt_7leaves_iter50000'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
-    # params = {
-    #     'objective': 'regression_l2',
-    #     'num_leaves': 64,
-    #     'boosting': 'gbdt',
-    #     'feature_fraction': 0.9,
-    #     'bagging_fraction': 0.6,
-    #     'bagging_freq': 50,
-    #     'verbose': 0,
-    #     'is_unbalance': False,
-    #     'metric': 'l1,l2,huber',
-    #     'num_threads': 12,
-    #     'min_data_in_leaf': 80,
-    #     'lambda_l2': 0.8,
-    #     'save_binary': True
-    # }
-    # lightgbm_mod = Booster(
-    #     model_file='/Users/jayvee/CS/Python/FundDataAnalysis/models/lightgbm_Quant_Data_5_norm_continued.model')
 
     # training
-    model_tag = 'test_refined_norm_gbdt_7leaves_iter30000'
+    model_tag = 'Full_gbdt_7leaves_iter50000'
     lightgbm_mod = None
     old_datas_numbers = range(500, 940)
     random.shuffle(old_datas_numbers)
