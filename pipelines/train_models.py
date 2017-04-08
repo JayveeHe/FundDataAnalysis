@@ -11,9 +11,9 @@ from __future__ import division
 import cPickle
 import multiprocessing
 import os
+import random
 
 import sys
-
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -89,7 +89,7 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
         'objective': 'regression_l2',
         'num_leaves': 7,
         'boosting': 'gbdt',
-        'feature_fraction': 0.7,
+        'feature_fraction': 0.8,
         'bagging_fraction': 0.7,
         'bagging_freq': 50,
         'verbose': 0,
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     pass
     lightgbm_mod = None
     # 继续训练
-    model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000'
+    model_tag = 'Full_gbdt_7leaves_iter50000'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # params = {
@@ -193,19 +193,19 @@ if __name__ == '__main__':
 
     # training
     model_tag = 'test_refined_norm_gbdt_7leaves_iter30000'
-    # lightgbm_mod = None
-    # old_datas_numbers = range(500, 940)
-    # random.shuffle(old_datas_numbers)
-    # train_lightGBM_new_data(
-    #     old_datas_numbers[:120] + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
-    #     former_model=lightgbm_mod,
-    #     output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-    #     save_rounds=500, num_total_iter=30000)
+    lightgbm_mod = None
+    old_datas_numbers = range(500, 940)
+    random.shuffle(old_datas_numbers)
     train_lightGBM_new_data(
-        range(1, 5),
+        old_datas_numbers[:200] + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-        save_rounds=500, num_total_iter=30000, process_count=30)
+        save_rounds=500, num_total_iter=50000, process_count=30)
+    # train_lightGBM_new_data(
+    #     range(1, 5),
+    #     former_model=lightgbm_mod,
+    #     output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+    #     save_rounds=500, num_total_iter=30000, process_count=30)
     # train_lightGBM_new_data(range(840, 841), former_model=lightgbm_mod,
     #                         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
     #                         save_rounds=500, num_total_iter=50000)
