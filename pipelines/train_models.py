@@ -24,7 +24,8 @@ from utils.model_utils import train_with_lightgbm
 import cPickle
 import numpy as np
 
-DATA_ROOT = '/media/user/Data0/hjw'
+# DATA_ROOT = '/media/user/Data0/hjw'
+DATA_ROOT = '/Users/jayvee/CS/Python/FundDataAnalysis'
 
 
 def load_pickle_datas(tmp_pickle_path):
@@ -68,24 +69,32 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
     proc_pool.close()
     proc_pool.join()
     # fetch datas from pool
-    tmp_data = multi_results[0].get()
-    train_datas = tmp_data
+    stock_ids, stock_scores, vec_values = multi_results[0].get()
+    # train_datas = tmp_data
+    label_list = stock_scores
+    vec_list = vec_values
     data_process_logger.info('combining datas...')
-    for i in xrange(1, len(multi_results)):
+    for i in xrange(0, len(multi_results)):
         data_process_logger.info('combining No.%s data' % i)
         try:
-            datas = multi_results[i].get()
+            stock_ids, stock_scores, vec_values = multi_results[i].get()
             # train_datas = np.row_stack((train_datas, datas)) # np.2darray
             # train_datas = np.vstack((train_datas, datas))
             # train_datas.extend(datas)
-            for item in datas:
-                if len(item) == len(train_datas[-1]):
-                    train_datas.append(item)
+            # label_list.extend(stock_scores)
+            for index in range(len(vec_values)):
+                vec = vec_values[index]
+                label = stock_scores[index]
+                if len(vec) == len(vec_list[-1]):
+                    vec_list.append(vec)
+                    label_list.append(label)
                 else:
-                    print 'not equaling n_feature: %s' % len(item)
+                    print 'not equaling n_feature: %s' % len(vec)
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
             continue
+    # 组装train_datas
+    train_datas = (label_list, vec_list)
     if not output_lightgbm_path:
         model_tag = 'Quant_Data_%s_norm' % (len(train_file_number_list))
         output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
@@ -194,7 +203,7 @@ if __name__ == '__main__':
     #     range(1, 5),
     #     former_model=lightgbm_mod,
     #     output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-    #     save_rounds=500, num_total_iter=30000, process_count=30)
+    #     save_rounds=500, num_total_iter=30000, process_count=1)
     # train_lightGBM_new_data(range(840, 841), former_model=lightgbm_mod,
     #                         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
     #                         save_rounds=500, num_total_iter=50000)

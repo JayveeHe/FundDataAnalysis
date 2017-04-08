@@ -29,25 +29,25 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
     print cv
 
 
-def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
-    """
-    input:(file_names,model)
-    output: mean rank rate
-    """
-    mean_rank_rates = []
-    for i in input_files:
-        input_datas = load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, i), is_combine=is_combined, normalize=normalize)
-        data_process_logger.info('testing file: %s.csv' % i)
-        mean_rank_rate = test_datas(input_datas, model)
-        if mean_rank_rate >= 0.4:
-            data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
-        mean_rank_rates.append(mean_rank_rate)
-    mean_rank_rate = np.mean(mean_rank_rates)
-    std_rank_rate = np.std(mean_rank_rates)
-    var_rank = np.var(mean_rank_rates)
-    data_process_logger.info(
-        'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
-            mean_rank_rate, std_rank_rate, var_rank))
+# def test_datas_wrapper(input_files, model, normalize=True, is_combined=False):
+#     """
+#     input:(file_names,model)
+#     output: mean rank rate
+#     """
+#     mean_rank_rates = []
+#     for i in input_files:
+#         input_datas = load_csv_data('%s/datas/%s.csv' % (PROJECT_PATH, i), is_combine=is_combined, normalize=normalize)
+#         data_process_logger.info('testing file: %s.csv' % i)
+#         mean_rank_rate = test_datas(input_datas, model)
+#         if mean_rank_rate >= 0.4:
+#             data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
+#         mean_rank_rates.append(mean_rank_rate)
+#     mean_rank_rate = np.mean(mean_rank_rates)
+#     std_rank_rate = np.std(mean_rank_rates)
+#     var_rank = np.var(mean_rank_rates)
+#     data_process_logger.info(
+#         'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
+#             mean_rank_rate, std_rank_rate, var_rank))
 
 
 def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
@@ -68,15 +68,16 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
             fin_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
         try:
             with open(fin_path, 'rb') as fin_data_file:
-                input_datas = cPickle.load(fin_data_file)
+                stock_ids, stock_scores, vec_values = cPickle.load(fin_data_file)
                 data_process_logger.info('testing file: %s' % fin_path)
+                input_datas = np.column_stack((stock_ids, stock_scores, vec_values))
                 mean_rank_rate = test_datas(input_datas, model)
                 if mean_rank_rate >= 0.4:
                     data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
                 mean_rank_rates.append(mean_rank_rate)
                 file_number_list.append(i)
-        except:
-            data_process_logger.info('test file failed: file path=%s' % (fin_path))
+        except Exception, e:
+            data_process_logger.info('test file failed: file path=%s, details=%s' % (fin_path, e))
     mean_rank_rate = np.mean(mean_rank_rates)
     std_rank_rate = np.std(mean_rank_rates)
     var_rank = np.var(mean_rank_rates)
@@ -88,9 +89,12 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
 
 def test_datas(input_datas, model):
     # input_datas = list(input_datas)
+    input_datas = input_datas.tolist()
     input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
     xlist = [a[2:] for a in input_ranked_list]
     origin_score_list = [a[1] for a in input_ranked_list]
+    # xlist = input_ranked_list[:, 2:]
+    # origin_score_list = input_ranked_list[:, 1]
     # pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path, 'rb'))
     # xlist = list(pca_mod.transform(xlist))
     ylist = model.predict(xlist)
@@ -121,7 +125,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
-    model_tag = 'New_Quant_Data_refined_norm_gbdt_7leaves_iter30000'
+    model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -134,6 +138,9 @@ if __name__ == '__main__':
     f_numbers, f_rank_rates = test_quant_data_wrapper(
         range(740, 840) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
         normalize=True)
+    # f_numbers, f_rank_rates = test_quant_data_wrapper(
+    #     range(1, 11), lightgbm_mod,
+    #     normalize=True)
     # save test result to csv
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
