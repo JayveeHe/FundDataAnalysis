@@ -13,7 +13,6 @@ import numpy as np
 from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
 
-from pipelines.train_models import DATA_ROOT
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -22,6 +21,7 @@ sys.path.append(PROJECT_PATH)
 import multiprocessing
 
 from utils.logger_utils import data_process_logger
+from pipelines.train_models import DATA_ROOT
 
 
 def load_csv_data(csv_path, normalize=True, is_combine=False):

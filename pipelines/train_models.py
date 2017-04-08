@@ -24,7 +24,7 @@ from utils.model_utils import train_with_lightgbm
 import cPickle
 import numpy as np
 
-DATA_ROOT = ''
+DATA_ROOT = '/media/user/Data0/hjw'
 
 
 def load_pickle_datas(tmp_pickle_path):
