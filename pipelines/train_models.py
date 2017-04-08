@@ -77,7 +77,12 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
             datas = multi_results[i].get()
             # train_datas = np.row_stack((train_datas, datas)) # np.2darray
             # train_datas = np.vstack((train_datas, datas))
-            train_datas.extend(datas)
+            # train_datas.extend(datas)
+            for item in datas:
+                if len(item) == len(train_datas[-1]):
+                    train_datas.append(item)
+                else:
+                    print 'not equaling n_feature: %s' % len(item)
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
             continue
