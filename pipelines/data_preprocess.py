@@ -13,6 +13,8 @@ import numpy as np
 from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
 
+from pipelines.train_models import DATA_ROOT
+
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
@@ -154,10 +156,10 @@ def infer_missing_datas(fin_csv_path, fout_csv_path, fout_pickle_path, is_norm=F
         data_process_logger.info('start writting %s' % fout_csv_path)
         # for row in transformed_datas:
         #     writer.writerow(row)
-            # data_process_logger.info('line %s written' % count)
-            # count += 1
-            # result = ','.join(row)
-            # fout_csv.write(result + '\n')
+        # data_process_logger.info('line %s written' % count)
+        # count += 1
+        # result = ','.join(row)
+        # fout_csv.write(result + '\n')
         data_process_logger.info('start dumping %s' % fout_pickle_path)
         transformed_datas = transformed_datas.tolist()
         cPickle.dump(transformed_datas, fout_pickle, protocol=2)
@@ -177,7 +179,7 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True):
     for i in file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/%s.csv' % (PROJECT_PATH, i)
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
         fin_csv_path = '%s/%s.csv' % (data_root_path, i)
         if is_norm:
             fout_csv_path = '%s/transformed_datas/%s_trans_norm.csv' % (data_root_path, i)

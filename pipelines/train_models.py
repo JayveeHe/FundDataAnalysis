@@ -28,6 +28,8 @@ from utils.model_utils import train_with_lightgbm
 import cPickle
 import numpy as np
 
+DATA_ROOT = ''
+
 
 def load_pickle_datas(tmp_pickle_path):
     with open(tmp_pickle_path, 'rb') as fin:
@@ -37,11 +39,12 @@ def load_pickle_datas(tmp_pickle_path):
 
 
 def train_lightGBM_new_data(train_file_number_list, former_model=None, output_lightgbm_path=None, save_rounds=1000,
-                            num_total_iter=100):
+                            num_total_iter=100, process_count=12):
     """
     利用新数据(2899维)训练lightGBM模型
 
     Args:
+        process_count: 并行进程数
         num_total_iter: 总迭代次数
         save_rounds: 存储的迭代间隔
         output_lightgbm_path: 模型的保存路径
@@ -54,13 +57,12 @@ def train_lightGBM_new_data(train_file_number_list, former_model=None, output_li
 
     # train_file_number_list = range(1, 300)
     # load with multi-processor
-    process_count = 14
     proc_pool = multiprocessing.Pool(process_count)
     multi_results = []
     for i in train_file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
         pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         data_process_logger.info('add file: %s' % pickle_path)
         data_res = proc_pool.apply_async(load_pickle_datas, args=(pickle_path,))
@@ -204,10 +206,10 @@ if __name__ == '__main__':
     #     output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
     #     save_rounds=500, num_total_iter=30000)
     train_lightGBM_new_data(
-        range(1,5),
+        range(1, 5),
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-        save_rounds=500, num_total_iter=30000)
+        save_rounds=500, num_total_iter=30000, process_count=30)
     # train_lightGBM_new_data(range(840, 841), former_model=lightgbm_mod,
     #                         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
     #                         save_rounds=500, num_total_iter=50000)

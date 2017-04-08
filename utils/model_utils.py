@@ -78,6 +78,9 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
     # vec_set = input_datas[:, 2:]
     label_set = [a[1] for a in input_datas]
     vec_set = [a[2:] for a in input_datas]
+    label_set = np.array(label_set)
+    vec_set = np.array(vec_set)
+    print vec_set.shape
     data_process_logger.info('training lightgbm')
     data_process_logger.info('params: \n%s' % params)
     data_process_logger.info('building dataset')
