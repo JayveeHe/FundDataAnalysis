@@ -22,6 +22,7 @@ from lightgbm import Booster
 from pipelines.data_preprocess import load_csv_data
 from utils.logger_utils import data_process_logger
 from utils.logger_utils import data_analysis_logger
+from pipelines.train_models import DATA_ROOT
 
 
 def cross_valid(input_x_datas, input_y_datas, cv_model):
@@ -61,7 +62,7 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
         model.save_model('tmp_model.txt', num_iteration=predict_iteration)
         model = Booster(model_file='tmp_model.txt')
     for i in input_file_numbers:
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (PROJECT_PATH)
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
         if normalize:
             fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         else:
@@ -121,7 +122,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
-    model_tag = 'New_Quant_Data_refined_norm_gbdt_7leaves_iter30000'
+    model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-        range(740, 840) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
+        range(300,400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
         normalize=True)
     # save test result to csv
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
