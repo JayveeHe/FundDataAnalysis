@@ -12,6 +12,8 @@ import sys
 
 from lightgbm import Booster
 
+from pipelines.train_models import DATA_ROOT
+
 try:
     import cPickle as pickle
 except:
@@ -77,6 +79,7 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         # 对预测结果进行排序并输出csv
         result = np.column_stack((stock_ids, score_list, origin_score_list))
         sorted_result = sorted(result, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
+        writer.writerow(['stock_id', 'predict_score', 'origin_score'])
         for row in sorted_result:
             writer.writerow(row)
         # writting transformed datas
@@ -84,10 +87,11 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         return sorted_result
 
 
-def processing_real_data(model_path, file_numbers=[], workspace_root='./', predict_iter=None):
+def processing_real_data(model_path, file_numbers=[], workspace_root='./', model_tag='real', predict_iter=None):
     """
     进行并行化处理实测数据
     Args:
+        model_tag:
         predict_iter:
         model_path: 预测使用的模型路径 (lightGBM模型)
         process_count: 并行核心数
@@ -96,7 +100,7 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', predi
     Returns:
 
     """
-    output_path = os.path.join(workspace_root, 'results')
+    output_path = os.path.join(workspace_root, '%s_results' % model_tag)
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
@@ -113,7 +117,8 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', predi
 
 
 if __name__ == '__main__':
-    wsr = '%s/datas/Quant-Datas' % PROJECT_PATH
+    wsr = '%s/datas/Quant-Datas-2.0' % DATA_ROOT
     fn = [1, 2, 3, 4]
     mpath = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    processing_real_data(mpath, fn, wsr, predict_iter=27000)
+    model_tag = 'refined'
+    processing_real_data(mpath, fn, wsr, model_tag=model_tag, predict_iter=27000)

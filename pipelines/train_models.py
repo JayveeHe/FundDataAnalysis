@@ -195,7 +195,7 @@ if __name__ == '__main__':
     old_datas_numbers = range(500, 940)
     random.shuffle(old_datas_numbers)
     train_lightGBM_new_data(
-         range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
+        range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500, num_total_iter=50000, process_count=30)

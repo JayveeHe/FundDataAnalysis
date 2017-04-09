@@ -51,7 +51,6 @@ def cross_valid(input_x_datas, input_y_datas, cv_model):
 #         'all input files mean rank rate is %s, all input files std is %s, var is %s' % (
 #             mean_rank_rate, std_rank_rate, var_rank))
 
-
 def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
     """
     input:(file_names,model)
@@ -87,6 +86,7 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
         'Tested %s files, all input files mean rank rate is %s, all input files std is %s, var is %s' % (
             len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
     return file_number_list, mean_rank_rates
+
 
 # ------ For parallel process -----
 def test_single_file(fin_path):
@@ -148,21 +148,31 @@ def parallel_test_quant_data_wrapper(input_file_numbers, model, normalize=True, 
             len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
     return file_number_list, mean_rank_rates
 
+
 # ------ End of Parallel Process -----
 
 
 def test_datas(input_datas, model):
     # input_datas = list(input_datas)
-    input_datas = input_datas.tolist()
-    input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
-    xlist = [a[2:] for a in input_ranked_list]
-    origin_score_list = [a[1] for a in input_ranked_list]
+    input_datas_np = input_datas
+    xlist = input_datas_np[:, 2:]
+    ylist = model.predict(xlist)
+    origin_score_list = input_datas_np[:, 1]
+    combined_score_list = np.column_stack((ylist, origin_score_list))
+    # input_datas = input_datas.tolist()
+    # input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
+    combined_score_list = combined_score_list.tolist()
+    input_ranked_list = sorted(combined_score_list, cmp=lambda x, y: 1 if x[0] - y[0] > 0 else -1)
+
+    # xlist = [a[2:] for a in input_ranked_list]
+    # origin_score_list = [a[1] for a in input_ranked_list]
     # xlist = input_ranked_list[:, 2:]
     # origin_score_list = input_ranked_list[:, 1]
     # pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path, 'rb'))
     # xlist = list(pca_mod.transform(xlist))
-    ylist = model.predict(xlist)
-    index_ylist = [(i, ylist[i], origin_score_list[i]) for i in range(len(ylist))]
+    # ylist = model.predict(xlist)
+    # index_ylist = [(i, ylist[i], origin_score_list[i]) for i in range(len(ylist))]
+    index_ylist = [(i, input_ranked_list[i][0], input_ranked_list[i][1]) for i in range(len(input_ranked_list))]
     ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
     # for i in range(len(ranked_index_ylist)):
     # data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
@@ -189,7 +199,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
-    model_tag = 'Wobble_gbdt_7leaves_iter50000'
+    model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -200,14 +210,14 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-        range(300,400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
+        range(300, 400) + range(940, 1040) + range(1145, 1195) + range(1245, 1300) + range(1450, 1511), lightgbm_mod,
         normalize=True, predict_iteration=None)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
-    f_numbers, f_rank_rates = parallel_test_quant_data_wrapper(
-        range(1, 11), lightgbm_mod,
-        normalize=True, process_count=30)
+    # f_numbers, f_rank_rates = parallel_test_quant_data_wrapper(
+    #     range(1, 11), lightgbm_mod,
+    #     normalize=True, process_count=2)
     # save test result to csv
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
