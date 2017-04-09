@@ -88,7 +88,7 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
             len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
     return file_number_list, mean_rank_rates
 
-
+# ------ For parallel process -----
 def test_single_file(fin_path):
     try:
         global g_model
@@ -148,6 +148,8 @@ def parallel_test_quant_data_wrapper(input_file_numbers, model, normalize=True, 
             len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
     return file_number_list, mean_rank_rates
 
+# ------ End of Parallel Process -----
+
 
 def test_datas(input_datas, model):
     # input_datas = list(input_datas)
@@ -187,7 +189,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
-    model_tag = 'Full_gbdt_7leaves_iter50000'
+    model_tag = 'Wobble_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -197,8 +199,11 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
+    f_numbers, f_rank_rates = test_quant_data_wrapper(
+        range(300,400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
+        normalize=True, predict_iteration=None)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
-    #     range(300, 400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
+    #     range(1, 11), lightgbm_mod,
     #     normalize=True)
     f_numbers, f_rank_rates = parallel_test_quant_data_wrapper(
         range(1, 11), lightgbm_mod,
@@ -207,3 +212,4 @@ if __name__ == '__main__':
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
             fout.write('%s,%s\n' % (f_numbers[i], f_rank_rates[i]))
+        data_process_logger.info('result csv: %s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)))
