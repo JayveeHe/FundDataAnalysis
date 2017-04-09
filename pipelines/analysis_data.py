@@ -6,6 +6,7 @@
 Created by jayvee on 17/2/23.
 https://github.com/JayveeHe
 """
+import multiprocessing
 import os
 import sys
 
@@ -88,6 +89,66 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
     return file_number_list, mean_rank_rates
 
 
+def test_single_file(fin_path):
+    try:
+        global g_model
+        with open(fin_path, 'rb') as fin_data_file:
+            stock_ids, stock_scores, vec_values = cPickle.load(fin_data_file)
+            data_process_logger.info('testing file: %s' % fin_path)
+            input_datas = np.column_stack((stock_ids, stock_scores, vec_values))
+            mean_rank_rate = test_datas(input_datas, g_model)
+            if mean_rank_rate >= 0.4:
+                data_analysis_logger.info('the file number is %s, obs = %s' % (i, len(input_datas)))
+            # mean_rank_rates.append(mean_rank_rate)
+            # file_number_list.append(i)
+            return mean_rank_rate, i
+    except Exception, e:
+        data_process_logger.info('test file failed: file path=%s, details=%s' % (fin_path, e))
+
+
+g_model = Booster(model_file='tmp_model.txt')
+
+
+def parallel_test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None,
+                                     process_count=2):
+    """
+    input:(file_names,model)
+    output: mean rank rate
+    """
+    mean_rank_rates = []
+    file_number_list = []
+    if predict_iteration:
+        model.save_model('tmp_model.txt', num_iteration=predict_iteration)
+    else:
+        model.save_model('tmp_model.txt')
+    global g_model
+    g_model = Booster(model_file='tmp_model.txt')
+    proc_pool = multiprocessing.Pool(process_count)
+    multi_result = []
+    for i in input_file_numbers:
+        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
+        if normalize:
+            fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
+        else:
+            fin_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
+        data_res = proc_pool.apply_async(test_single_file, args=(fin_path,))
+        multi_result.append(data_res)
+    proc_pool.close()
+    proc_pool.join()
+    # 合并结果
+    for i in range(len(multi_result)):
+        tmp_mean_rank_rate, file_n = multi_result[i].get()
+        mean_rank_rates.append(tmp_mean_rank_rate)
+        file_number_list.append(file_n)
+    mean_rank_rate = np.mean(mean_rank_rates)
+    std_rank_rate = np.std(mean_rank_rates)
+    var_rank = np.var(mean_rank_rates)
+    data_process_logger.info(
+        'Tested %s files, all input files mean rank rate is %s, all input files std is %s, var is %s' % (
+            len(input_file_numbers), mean_rank_rate, std_rank_rate, var_rank))
+    return file_number_list, mean_rank_rates
+
+
 def test_datas(input_datas, model):
     # input_datas = list(input_datas)
     input_datas = input_datas.tolist()
@@ -136,12 +197,12 @@ if __name__ == '__main__':
     # data_process_logger.info('test trianing file')
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
-    f_numbers, f_rank_rates = test_quant_data_wrapper(
-        range(300,400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
-        normalize=True)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
-    #     range(1, 11), lightgbm_mod,
+    #     range(300, 400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
     #     normalize=True)
+    f_numbers, f_rank_rates = parallel_test_quant_data_wrapper(
+        range(1, 11), lightgbm_mod,
+        normalize=True, process_count=30)
     # save test result to csv
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
