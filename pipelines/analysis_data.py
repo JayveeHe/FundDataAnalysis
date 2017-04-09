@@ -160,25 +160,27 @@ def test_datas(input_datas, model):
     origin_score_list = input_datas_np[:, 1]
     combined_score_list = np.column_stack((ylist, origin_score_list))
     # input_datas = input_datas.tolist()
-    # input_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
+    # origin_ranked_list = sorted(input_datas, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
     combined_score_list = combined_score_list.tolist()
-    input_ranked_list = sorted(combined_score_list, cmp=lambda x, y: 1 if x[0] - y[0] > 0 else -1)
+    origin_ranked_list = sorted(combined_score_list, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)  # 根据原始值值进行排序
 
-    # xlist = [a[2:] for a in input_ranked_list]
-    # origin_score_list = [a[1] for a in input_ranked_list]
-    # xlist = input_ranked_list[:, 2:]
-    # origin_score_list = input_ranked_list[:, 1]
+    # xlist = [a[2:] for a in origin_ranked_list]
+    # origin_score_list = [a[1] for a in origin_ranked_list]
+    # xlist = origin_ranked_list[:, 2:]
+    # origin_score_list = origin_ranked_list[:, 1]
     # pca_mod = cPickle.load(open('%s/models/pca_norm_5.model' % project_path, 'rb'))
     # xlist = list(pca_mod.transform(xlist))
     # ylist = model.predict(xlist)
     # index_ylist = [(i, ylist[i], origin_score_list[i]) for i in range(len(ylist))]
-    index_ylist = [(i, input_ranked_list[i][0], input_ranked_list[i][1]) for i in range(len(input_ranked_list))]
-    ranked_index_ylist = sorted(index_ylist, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
-    # for i in range(len(ranked_index_ylist)):
+    # 得到原始值的排名序号
+    index_ylist = [(i, origin_ranked_list[i][0], origin_ranked_list[i][1]) for i in range(len(origin_ranked_list))]
+    predict_ranked_index_ylist = sorted(index_ylist,
+                                        cmp=lambda x, y: 1 if x[0] - y[0] > 0 else -1)  # 根据预测值进行排序,保留原始值排名序号
+    # for i in range(len(predict_ranked_index_ylist)):
     # data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
-    #    i, ranked_index_ylist[i][0], i - ranked_index_ylist[i][0], ranked_index_ylist[i][1],
-    #    ranked_index_ylist[i][2]))
-    mean_rank_rate = result_validation(ranked_index_ylist)
+    #    i, predict_ranked_index_ylist[i][0], i - predict_ranked_index_ylist[i][0], predict_ranked_index_ylist[i][1],
+    #    predict_ranked_index_ylist[i][2]))
+    mean_rank_rate = result_validation(predict_ranked_index_ylist)
     return mean_rank_rate
 
 
