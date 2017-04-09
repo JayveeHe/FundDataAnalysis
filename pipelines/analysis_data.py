@@ -126,7 +126,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
-    model_tag = 'Full_gbdt_7leaves_iter50000'
+    model_tag = 'Wobble_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
         range(300,400) + range(940, 1040) + range(1145, 1195) + range(1245, 1295) + range(1345, 1445), lightgbm_mod,
-        normalize=True)
+        normalize=True, predict_iteration=None)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
@@ -146,3 +146,4 @@ if __name__ == '__main__':
     with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
             fout.write('%s,%s\n' % (f_numbers[i], f_rank_rates[i]))
+        data_process_logger.info('result csv: %s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)))

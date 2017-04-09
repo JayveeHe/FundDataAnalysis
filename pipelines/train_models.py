@@ -24,8 +24,8 @@ from utils.model_utils import train_with_lightgbm
 import cPickle
 import numpy as np
 
-# DATA_ROOT = '/media/user/Data0/hjw'
-DATA_ROOT = '/Users/jayvee/CS/Python/FundDataAnalysis'
+DATA_ROOT = '/media/user/Data0/hjw'
+# DATA_ROOT = '/Users/jayvee/CS/Python/FundDataAnalysis'
 
 
 def load_pickle_datas(tmp_pickle_path):
@@ -187,15 +187,15 @@ if __name__ == '__main__':
     # 继续训练
     model_tag = 'Full_gbdt_7leaves_iter50000'
     # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    model_tag = 'Full_gbdt_7leaves_iter50000'
+    model_tag = 'Wobble_gbdt_7leaves_iter50000'
     lightgbm_mod = None
     old_datas_numbers = range(500, 940)
     random.shuffle(old_datas_numbers)
     train_lightGBM_new_data(
-        old_datas_numbers[:200] + range(1075, 1145) + range(1195, 1245) + range(1295, 1345) + range(1460, 1510),
+         range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500, num_total_iter=50000, process_count=30)

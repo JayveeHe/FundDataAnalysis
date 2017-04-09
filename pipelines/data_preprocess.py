@@ -202,4 +202,4 @@ if __name__ == '__main__':
     #                     fout_pickle_path='%s/datas/Quant-Datas/pickle_datas/%s_trans.pickle' % (PROJECT_PATH, 1))
     # pickle_data = cPickle.load()
     # print len(pickle_data)
-    parallel_inferring(file_number_list=range(1, 1511), process_count=1, is_norm=True)
+    parallel_inferring(file_number_list=range(1, 1511), process_count=32, is_norm=True)
