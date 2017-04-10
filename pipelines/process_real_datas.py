@@ -76,10 +76,11 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         origin_score_list = [a[1] for a in transformed_datas]
         stock_ids = [a[0] for a in transformed_datas]
         score_list = predict_model.predict(xlist, num_iteration=predict_iteration)
+        line_numbers = range(1, len(xlist) + 1)
         # 对预测结果进行排序并输出csv
-        result = np.column_stack((stock_ids, score_list, origin_score_list))
-        sorted_result = sorted(result, cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)
-        writer.writerow(['stock_id', 'predict_score', 'origin_score'])
+        result = np.column_stack((line_numbers, stock_ids, score_list, origin_score_list))
+        sorted_result = sorted(result, cmp=lambda x, y: 1 if x[2] - y[2] > 0 else -1)
+        writer.writerow(['origin_line', 'stock_id', 'predict_score', 'origin_score'])
         for row in sorted_result:
             writer.writerow(row)
         # writting transformed datas
@@ -117,8 +118,9 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', model
 
 
 if __name__ == '__main__':
-    wsr = '%s/datas/Quant-Datas-2.0' % DATA_ROOT
-    fn = [1, 2, 3, 4]
-    mpath = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    model_tag = 'refined'
-    processing_real_data(mpath, fn, wsr, model_tag=model_tag, predict_iter=27000)
+    wsr = '/media/user/Data0/hjw/Quant-Datas-v2.0-Test'
+    fn = range(1, 71)
+    # mpath = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    model_tag = 'Old_Best'
+    processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
