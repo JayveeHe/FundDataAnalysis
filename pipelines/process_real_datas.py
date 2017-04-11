@@ -82,7 +82,7 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         sorted_result = sorted(result, cmp=lambda x, y: 1 if x[2] - y[2] > 0 else -1)
         writer.writerow(['origin_line', 'stock_id', 'predict_score', 'origin_score'])
         for row in sorted_result:
-            writer.writerow(row)
+            writer.writerow([int(row[0]), str(row[1]), row[2], row[3]])
         # writting transformed datas
         data_process_logger.info('complete writting %s' % output_csv_path)
         return sorted_result
@@ -119,8 +119,9 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', model
 
 if __name__ == '__main__':
     wsr = '/media/user/Data0/hjw/Quant-Datas-v2.0-Test'
+    # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
     fn = range(1, 71)
-    # mpath = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    # model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
     model_tag = 'Old_Best'
     processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
