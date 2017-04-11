@@ -185,15 +185,27 @@ if __name__ == '__main__':
     pass
     lightgbm_mod = None
     # 继续训练
-    model_tag = 'Full_gbdt_7leaves_iter50000'
-    # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
-    lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    # model_tag = 'Full_gbdt_7leaves_iter50000'
+    # # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
+    # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
+    # Full
+    model_tag = 'Full_gbdt_15leaves_iter50000'
+    lightgbm_mod = None
+    old_datas_numbers = range(500, 940)
+    random.shuffle(old_datas_numbers)
+    train_lightGBM_new_data(
+        range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
+        former_model=lightgbm_mod,
+        output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+        save_rounds=500, num_total_iter=50000, process_count=30)
+    # Wobble
     model_tag = 'Wobble_gbdt_7leaves_iter50000'
     lightgbm_mod = None
     old_datas_numbers = range(500, 940)
     random.shuffle(old_datas_numbers)
+    model_tag = 'Wobble_gbdt_7leaves_iter50000'
     train_lightGBM_new_data(
         range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
         former_model=lightgbm_mod,
