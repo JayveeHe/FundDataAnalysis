@@ -153,6 +153,15 @@ def parallel_test_quant_data_wrapper(input_file_numbers, model, normalize=True, 
 
 
 def test_datas(input_datas, model):
+    """
+    测试单个输入
+    Args:
+        input_datas:
+        model:
+
+    Returns:
+
+    """
     # input_datas = list(input_datas)
     input_datas_np = input_datas
     xlist = input_datas_np[:, 2:]
@@ -175,12 +184,12 @@ def test_datas(input_datas, model):
     # 得到原始值的排名序号
     index_ylist = [(i, origin_ranked_list[i][0], origin_ranked_list[i][1]) for i in range(len(origin_ranked_list))]
     predict_ranked_index_ylist = sorted(index_ylist,
-                                        cmp=lambda x, y: 1 if x[0] - y[0] > 0 else -1)  # 根据预测值进行排序,保留原始值排名序号
+                                        cmp=lambda x, y: 1 if x[1] - y[1] > 0 else -1)  # 根据预测值进行排序,保留原始值排名序号
     # for i in range(len(predict_ranked_index_ylist)):
     # data_process_logger.info('pre: %s\t origin: %s\t delta: %s\tpredict_score: %s\torigin_score: %s' % (
     #    i, predict_ranked_index_ylist[i][0], i - predict_ranked_index_ylist[i][0], predict_ranked_index_ylist[i][1],
     #    predict_ranked_index_ylist[i][2]))
-    mean_rank_rate = result_validation(predict_ranked_index_ylist)
+    mean_rank_rate = result_validation(predict_ranked_index_ylist, N=50)
     return mean_rank_rate
 
 
