@@ -12,7 +12,6 @@ import sys
 
 from lightgbm import Booster
 
-from pipelines.train_models import DATA_ROOT
 
 try:
     import cPickle as pickle
@@ -23,12 +22,13 @@ from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
 import numpy as np
 
-from utils.logger_utils import data_process_logger
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
 
+from pipelines.train_models import DATA_ROOT
+from utils.logger_utils import data_process_logger
 
 def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predict_iteration, is_norm=True,
                          is_norm_score=True):
@@ -118,10 +118,13 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', model
 
 
 if __name__ == '__main__':
-    wsr = '/media/user/Data0/hjw/Quant-Datas-v2.0-Test'
+    wsr = '/media/user/Seagate Expansion Drive/Quant_Datas_v2.0 test'
     # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
-    fn = range(1, 71)
-    model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    # model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    fn = range(1, 73)
+    # model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    # model_path = '%s/models/lightgbm_Full_gbdt_7leaves_iter50000.model' % PROJECT_PATH
+    # model_tag = 'Full'
+    # processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=50000)
+    model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
     model_tag = 'Old_Best'
     processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
