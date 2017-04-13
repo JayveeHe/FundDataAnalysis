@@ -183,6 +183,7 @@ def trainer_select(model_pattern):
         # Full
         model_tag = 'Full_gbdt_15leaves'
         # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+        lightgbm_mod = None
         params = {
             'objective': 'regression_l2',
             'num_leaves': 15,
@@ -202,11 +203,11 @@ def trainer_select(model_pattern):
         }
         model_tag = 'Full_gbdt_15leaves'
         train_lightGBM_new_data(
-            range(1045, 1145) + range(1195, 1245) + range(1300, 1450),
+            range(300,400)+range(840,941)+range(1042,1145)+range(1200,1301)+range(1400,1511),
             params,
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-            save_rounds=500, num_total_iter=50000, process_count=30)
+            save_rounds=500, num_total_iter=50000, process_count=32)
 
 
 if __name__ == '__main__':
