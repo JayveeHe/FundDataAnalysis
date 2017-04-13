@@ -182,8 +182,8 @@ def trainer_select(model_pattern):
     if model_pattern == 'full_15leaves':
         # Full
         model_tag = 'Full_gbdt_15leaves'
-        # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
-        lightgbm_mod = None
+        lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+        # lightgbm_mod = None
         params = {
             'objective': 'regression_l2',
             'num_leaves': 15,
@@ -212,7 +212,7 @@ def trainer_select(model_pattern):
 
 if __name__ == '__main__':
     pass
-    lightgbm_mod = None
+    # lightgbm_mod = None
     # 继续训练
     # model_tag = 'Full_gbdt_7leaves_iter50000'
     # # data_process_logger.info('continue training with model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
