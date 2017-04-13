@@ -210,6 +210,8 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 
 if __name__ == '__main__':
     # --------- Testing -------
+    # model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best'
+    # model_tag = 'Full_gbdt_15leaves'
     model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
@@ -221,8 +223,9 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-        range(300, 400) + range(940, 1040) + range(1145, 1195) + range(1245, 1300) + range(1450, 1511), lightgbm_mod,
-        normalize=True, predict_iteration=None)
+        range(1,300)+range(401,840)+range(941,1042)+range(1145,1200)+range(1301,1400)+range(1511,1521),
+        lightgbm_mod,
+        normalize=True, predict_iteration=50000)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
@@ -230,7 +233,7 @@ if __name__ == '__main__':
     #     range(1, 11), lightgbm_mod,
     #     normalize=True, process_count=2)
     # save test result to csv
-    with open('%s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)), 'wb') as fout:
+    with open('%s/pipelines/test_%s_result_%s.csv' % (PROJECT_PATH, model_tag, len(f_numbers)), 'wb') as fout:
         for i in range(len(f_numbers)):
             fout.write('%s,%s\n' % (f_numbers[i], f_rank_rates[i]))
-        data_process_logger.info('result csv: %s/pipelines/test_result_%s.csv' % (PROJECT_PATH, len(f_numbers)))
+        data_process_logger.info('result csv: %s/pipelines/test_%s_result_%s.csv' % (PROJECT_PATH,model_tag, len(f_numbers)))
