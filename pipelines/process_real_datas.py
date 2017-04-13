@@ -156,7 +156,7 @@ def predict_with_full(fin_csv_path, fout_csv_path=None, tag='Full'):
             os.mkdir(csv_output_dir)
         fout_csv_path = os.path.join(csv_output_dir, '%s_%s_result.csv' % (csv_filename[0], tag))
     old_best_mod = pickle.load(open(
-        '%s/models/best_models/lightgbm_Full_gbdt_7leaves_iter50000.model' % PROJECT_PATH))
+        '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH))
     turn_csv_into_result(fin_csv_path, fout_csv_path, old_best_mod, predict_iteration=50000)
 
 
@@ -173,6 +173,6 @@ if __name__ == '__main__':
     # batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
 
     # process daily csv
-    daily_csv_path = '/media/user/Seagate Expansion Drive/newdata_2738.csv'
+    daily_csv_path = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/daily/newdata_2739.csv'
     predict_with_oldbest(daily_csv_path)
     predict_with_full(daily_csv_path)
