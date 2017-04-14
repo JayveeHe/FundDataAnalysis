@@ -7,12 +7,11 @@ https://github.com/JayveeHe
 import csv
 import multiprocessing
 import os
+import re
 
 import sys
 
 from lightgbm import Booster
-
-from pipelines.train_models import DATA_ROOT
 
 try:
     import cPickle as pickle
@@ -23,11 +22,12 @@ from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
 import numpy as np
 
-from utils.logger_utils import data_process_logger
-
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
+
+from pipelines.train_models import DATA_ROOT
+from utils.logger_utils import data_process_logger
 
 
 def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predict_iteration, is_norm=True,
@@ -88,18 +88,17 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         return sorted_result
 
 
-def processing_real_data(model_path, file_numbers=[], workspace_root='./', model_tag='real', predict_iter=None):
+def batch_process_real_data(model_path, file_numbers=[], workspace_root='./', model_tag='real', predict_iter=None):
     """
-    进行并行化处理实测数据
+    进行批量处理实测数据,将结果存在相应文件下的<model_tag>文件夹下
     Args:
-        model_tag:
-        predict_iter:
+        model_tag: 模型tag
+        predict_iter:使用的模型迭代次数
         model_path: 预测使用的模型路径 (lightGBM模型)
-        process_count: 并行核心数
         workspace_root: csv文件所在的目录
         file_numbers: 处理的文件编号列表
     Returns:
-
+        None
     """
     output_path = os.path.join(workspace_root, '%s_results' % model_tag)
     if not os.path.exists(output_path):
@@ -117,11 +116,63 @@ def processing_real_data(model_path, file_numbers=[], workspace_root='./', model
     data_process_logger.info('Done with %s files' % len(file_numbers))
 
 
+def predict_with_oldbest(fin_csv_path, fout_csv_path=None, tag='OldBest'):
+    """
+    使用Old_Best模型进行单个文件的训练
+    Args:
+        fin_csv_path:
+        fout_csv_path:
+
+    Returns:
+
+    """
+    if not fout_csv_path:
+        csv_dir_path = os.path.dirname(fin_csv_path)
+        csv_filename = re.findall('%s/(.*)\.csv' % csv_dir_path, fin_csv_path)
+        csv_output_dir = os.path.join(csv_dir_path, 'Old_Best_results')
+        if not os.path.exists(csv_output_dir):
+            os.mkdir(csv_output_dir)
+        fout_csv_path = os.path.join(csv_output_dir, '%s_%s_result.csv' % (csv_filename[0], tag))
+    old_best_mod = pickle.load(open(
+        '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH))
+    turn_csv_into_result(fin_csv_path, fout_csv_path, old_best_mod, predict_iteration=27000)
+
+
+def predict_with_full(fin_csv_path, fout_csv_path=None, tag='Full'):
+    """
+    使用 Full 模型进行单个文件的训练
+    Args:
+        fin_csv_path:
+        fout_csv_path:
+
+    Returns:
+
+    """
+    if not fout_csv_path:
+        csv_dir_path = os.path.dirname(fin_csv_path)
+        csv_filename = re.findall('%s/(.*)\.csv' % csv_dir_path, fin_csv_path)
+        csv_output_dir = os.path.join(csv_dir_path, 'Full_results')
+        if not os.path.exists(csv_output_dir):
+            os.mkdir(csv_output_dir)
+        fout_csv_path = os.path.join(csv_output_dir, '%s_%s_result.csv' % (csv_filename[0], tag))
+    old_best_mod = pickle.load(open(
+        '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH))
+    turn_csv_into_result(fin_csv_path, fout_csv_path, old_best_mod, predict_iteration=50000)
+
+
 if __name__ == '__main__':
-    wsr = '/media/user/Data0/hjw/Quant-Datas-v2.0-Test'
-    # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
-    fn = range(1, 71)
-    model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    # wsr = '/media/user/Seagate Expansion Drive/Quant_Datas_v2.0 test'
+    # # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
+    # fn = range(1, 73)
+    # # model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    # # model_path = '%s/models/lightgbm_Full_gbdt_7leaves_iter50000.model' % PROJECT_PATH
+    # # model_tag = 'Full'
+    # # processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=50000)
     # model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    model_tag = 'Old_Best'
-    processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
+    # model_tag = 'Old_Best'
+    # batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
+
+    # process daily csv
+    daily_csv_path = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/daily/newdata_2739.csv'
+    predict_with_oldbest(daily_csv_path)
+    predict_with_full(daily_csv_path)
