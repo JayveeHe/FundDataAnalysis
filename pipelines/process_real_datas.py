@@ -120,6 +120,7 @@ def predict_with_oldbest(fin_csv_path, fout_csv_path=None, tag='OldBest'):
     """
     使用Old_Best模型进行单个文件的训练
     Args:
+        tag:
         fin_csv_path:
         fout_csv_path:
 
@@ -157,7 +158,11 @@ def predict_with_full(fin_csv_path, fout_csv_path=None, tag='Full'):
         fout_csv_path = os.path.join(csv_output_dir, '%s_%s_result.csv' % (csv_filename[0], tag))
     full_mod = pickle.load(open(
         '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH))
-    turn_csv_into_result(fin_csv_path, fout_csv_path, full_mod, predict_iteration=50000)
+    res = turn_csv_into_result(fin_csv_path, fout_csv_path, full_mod, predict_iteration=50000)
+    if res:
+        return fout_csv_path
+    else:
+        return None
 
 
 if __name__ == '__main__':
