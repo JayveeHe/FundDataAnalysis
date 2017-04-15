@@ -223,7 +223,7 @@ def trainer_select(model_pattern):
         # Full
         model_tag = 'Full_gbdt_15leaves_cv'
         # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
-        # lightgbm_mod = None
+        lightgbm_mod = None
         params = {
             'objective': 'regression_l2',
             'num_leaves': 15,
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    trainer_select('full_15leaves')
+    trainer_select('full_15leaves_cv')
 
     # train_lightGBM_new_data(
     #     range(1, 5),
