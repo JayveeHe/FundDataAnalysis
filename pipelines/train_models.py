@@ -208,6 +208,36 @@ def trainer_select(model_pattern):
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
             save_rounds=500, num_total_iter=50000, process_count=32)
+    # ------ Full CV ------
+    if model_pattern == 'full_15leaves_cv':
+        # Full
+        model_tag = 'Full_gbdt_15leaves_cv'
+        # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+        # lightgbm_mod = None
+        params = {
+            'objective': 'regression_l2',
+            'num_leaves': 15,
+            'boosting': 'gbdt',
+            'feature_fraction': 0.8,
+            'bagging_fraction': 0.7,
+            'bagging_freq': 50,
+            'verbose': 0,
+            'is_unbalance': False,
+            'metric': 'l1,l2,huber',
+            # 'num_threads': process_count,
+            'min_data_in_leaf': 80,
+            'lambda_l2': 1.5,
+            'save_binary': True,
+            'two_round': False,
+            'max_bin': 255
+        }
+        model_tag = 'Full_gbdt_15leaves_cv'
+        train_lightGBM_new_data(
+            range(300,400)+range(840,941)+range(1042,1145)+range(1200,1301)+range(1400,1511),
+            params,
+            former_model=lightgbm_mod,
+            output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+            save_rounds=500, num_total_iter=50000, process_count=32)
 
 
 if __name__ == '__main__':
