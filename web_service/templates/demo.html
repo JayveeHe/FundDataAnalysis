@@ -62,15 +62,19 @@
     </div>
     <div class="row" style="height: 100%;">
         <div class="col-md-1"></div>
-        <div class="col-md-5" style="height: 100%;">
-            Predict with Old_Best
+        <div class="col-md-5" style="height: 100%;word-wrap:break-word">
+            <p>Predict with Old_Best</p>
+            <span>【Model Tag】:</span>
+            <p>{{oldbest_model_tag}}</p>
             <form method=POST enctype=multipart/form-data action="{{ url_for('upload_predict_old') }}">
                 <input type=file name=csv>
                 <input type=submit class="btn btn-info">
             </form>
         </div>
-        <div class="col-md-5" style="height: 100%;">
-            Predict with Full
+        <div class="col-md-5" style="height: 100%;word-wrap:break-word">
+            <p>Predict with Full</p>
+            <span>【Model Tag】:</span>
+            <p>{{full_model_tag}}</p>
             <form method=POST enctype=multipart/form-data action="{{ url_for('upload_predict_full') }}">
                 <input type=file name=csv>
                 <input type=submit class="btn btn-info">

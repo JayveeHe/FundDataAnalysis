@@ -40,12 +40,12 @@ data_process_logger.info('initing lightGBM operator')
 oldbest_mod = pickle.load(open(
     '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH))
 oldbest_mod.save_model('flask_model.txt', num_iteration=27000)
-oldbest_operator = LightgbmOperator('flask_model.txt', 'old_best')
+oldbest_operator = LightgbmOperator('flask_model.txt', 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best')
 
 full_mod = pickle.load(open(
     '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH))
 full_mod.save_model('flask_model.txt', num_iteration=50000)
-full_operator = LightgbmOperator('flask_model.txt', 'full')
+full_operator = LightgbmOperator('flask_model.txt', 'Full_gbdt_15leaves')
 
 data_process_logger.info('complete init lightGBM')
 
@@ -74,7 +74,8 @@ def upload_predict_old():
             return redirect('static/csvs/Old_Best_results/%s_%s_result.csv' % (csv_filename[0], 'oldbest'))
         else:
             return None
-    return render_template('demo.html')
+    return render_template('demo.html', full_model_tag=full_operator.model_tag,
+                           oldbest_model_tag=oldbest_operator.model_tag)
 
 
 @app.route('/predict_full', methods=['GET', 'POST'])
@@ -95,12 +96,14 @@ def upload_predict_full():
             return redirect('static/csvs/Full_results/%s_%s_result.csv' % (csv_filename[0], 'full'))
         else:
             return None
-    return render_template('demo.html')
+    return render_template('demo.html', full_model_tag=full_operator.model_tag,
+                           oldbest_model_tag=oldbest_operator.model_tag)
 
 
 @app.route('/', methods=['GET'])
 def index_page():
-    return render_template('demo.html')
+    return render_template('demo.html', full_model_tag=full_operator.model_tag,
+                           oldbest_model_tag=oldbest_operator.model_tag)
 
 
 if __name__ == '__main__':
