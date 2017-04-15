@@ -68,7 +68,7 @@
             <p>{{oldbest_model_tag}}</p>
             <form method=POST enctype=multipart/form-data action="{{ url_for('upload_predict_old') }}">
                 <input type=file name=csv>
-                <input type=submit class="btn btn-info">
+                <input type=submit class="btn btn-info csv_submit">
             </form>
         </div>
         <div class="col-md-5" style="height: 100%;word-wrap:break-word">
@@ -77,7 +77,7 @@
             <p>{{full_model_tag}}</p>
             <form method=POST enctype=multipart/form-data action="{{ url_for('upload_predict_full') }}">
                 <input type=file name=csv>
-                <input type=submit class="btn btn-info">
+                <input type=submit class="btn btn-info csv_submit">
             </form>
         </div>
         <div class="col-md-1"></div>
@@ -88,6 +88,11 @@
     <div class="col-md-12"></div>
 </div>
 </div>
+<script>
+    $('.csv_submit').click(function () {
+        alert('正在分析,请稍后(15秒左右)...')
+    })
+</script>
 </body>
 
 </html>
