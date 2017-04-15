@@ -125,7 +125,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
 
 def trainer_select(model_pattern):
     model_pattern = model_pattern.lower()
-    if model_pattern not in ['wobble', 'full', 'full_15leaves']:
+    if model_pattern not in ['wobble', 'full', 'full_15leaves', 'full_15leaves_cv']:
         data_process_logger.error('Pattern not match!')
         return -1
     # ------ Wobble ------
