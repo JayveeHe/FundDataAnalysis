@@ -15,8 +15,6 @@ from flask_uploads import UploadSet, DATA, configure_uploads
 import os
 import sys
 
-from pipelines.process_real_datas import turn_csv_into_result
-
 try:
     import cPickle as pickle
 except:
@@ -29,6 +27,7 @@ sys.path.append(PROJECT_PATH)
 # add flask path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from pipelines.process_real_datas import turn_csv_into_result
 from utils.lightgbm_operator import LightgbmOperator
 from utils.logger_utils import data_process_logger
 
