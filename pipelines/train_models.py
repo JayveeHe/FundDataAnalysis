@@ -20,7 +20,7 @@ print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
 
 from utils.logger_utils import data_process_logger
-from utils.model_utils import train_with_lightgbm
+from utils.model_utils import train_with_lightgbm, cv_with_lightgbm
 import cPickle
 import numpy as np
 
@@ -39,11 +39,12 @@ def load_pickle_datas(tmp_pickle_path):
 
 def train_lightGBM_new_data(train_file_number_list, train_params, former_model=None, output_lightgbm_path=None,
                             save_rounds=1000,
-                            num_total_iter=100, process_count=12):
+                            num_total_iter=100, process_count=12, cv_fold=None):
     """
     利用新数据(2899维)训练lightGBM模型
 
     Args:
+        cv_fold: 是否进行CV,默认None,进行则填fold数
         train_params: 训练参数
         process_count: 并行进程数
         num_total_iter: 总迭代次数
@@ -105,12 +106,21 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
     # lightgbm_params = {'learning_rates': lambda iter_num: 0.05 * (0.99 ** iter_num)}
     # num_total_iter = 55
     train_params['num_threads'] = process_count
-    train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
-                        output_path=output_lightgbm_path, params=train_params,
-                        num_boost_round=num_total_iter,
-                        early_stopping_rounds=301,
-                        learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)), 0.008),
-                        thread_num=process_count)
+    if not cv_fold:
+        train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
+                            output_path=output_lightgbm_path, params=train_params,
+                            num_boost_round=num_total_iter,
+                            early_stopping_rounds=301,
+                            learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)),
+                                                                0.008),
+                            thread_num=process_count)
+    else:
+        cv_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
+                         output_path=output_lightgbm_path, params=train_params,
+                         num_boost_round=num_total_iter,
+                         early_stopping_rounds=301,
+                         learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)), 0.008),
+                         thread_num=process_count, cv_fold=cv_fold)
 
 
 def trainer_select(model_pattern):
@@ -203,7 +213,7 @@ def trainer_select(model_pattern):
         }
         model_tag = 'Full_gbdt_15leaves'
         train_lightGBM_new_data(
-            range(300,400)+range(840,941)+range(1042,1145)+range(1200,1301)+range(1400,1511),
+            range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511),
             params,
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
@@ -233,7 +243,7 @@ def trainer_select(model_pattern):
         }
         model_tag = 'Full_gbdt_15leaves_cv'
         train_lightGBM_new_data(
-            range(300,400)+range(840,941)+range(1042,1145)+range(1200,1301)+range(1400,1511),
+            range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511),
             params,
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
