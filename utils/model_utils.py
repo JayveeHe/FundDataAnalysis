@@ -106,20 +106,26 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
     return gbm
 
 
-def cv_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
+def cv_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_path='./models/lightgbm_model.mod',
                      num_boost_round=60000, early_stopping_rounds=30,
-                     learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num), params=None):
+                     learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
+                     params=None, thread_num=12, cv_fold=5):
     """
-    使用LightGBM进行训练
+    使用LightGBM进行CV训练
     Args:
+        cv_fold: fold数
+        save_rounds: 保存的迭代间隔
+        input_datas: load_csv_data函数的返回值
+        former_model: 如果需要从已有模型继续训练,则导入
+        thread_num: 并行训练数
+        learning_rates: 学习率函数
         early_stopping_rounds: early stop次数
         num_boost_round: 迭代次数
         params: dict形式的参数
-        output_path:
-        input_datas: load_csv_data函数的返回值
+        output_path: 模型输出位置
 
     Returns:
-
+        训练后的模型实例
     """
     import lightgbm as lgb
     # param = {'num_leaves': 31, 'num_trees': 100, 'objective': 'binary'}
@@ -128,40 +134,58 @@ def cv_with_lightgbm(input_datas, output_path='./models/lightgbm_model.mod',
     # train
     if not params:
         params = {
-            'boosting_type': 'gbdt',
             'objective': 'regression_l2',
-            'num_leaves': 15,
-            'boosting': 'dart',
+            'num_leaves': 128,
+            'boosting': 'gbdt',
             'feature_fraction': 0.9,
             'bagging_fraction': 0.7,
-            'bagging_freq': 20,
+            'bagging_freq': 100,
             'verbose': 0,
+            'is_unbalance': False,
             'metric': 'l1,l2,huber',
-            'num_threads': 12
+            'num_threads': thread_num
         }
-    # gbm = lgb.LGBMRegressor(objective='regression_l2',
-    #                         num_leaves=31,
-    #                         learning_rate=0.001,
-    #                         n_estimators=50, nthread=2, silent=False)
-    # params_grid = {'max_bin': [128, 255, 400], 'num_leaves': [21, 31],
-    #                'learning_rate': [0.01, 0.1, 0.005], 'n_estimators': [11, 15, 21]}
-    # gbm = GridSearchCV(gbm, params_grid, n_jobs=2)
-    label_set = []
-    vec_set = []
-    for i in range(len(input_datas)):
-        label_set.append(input_datas[i][2])
-        vec_set.append(input_datas[i][3])
-    data_process_logger.info('training lightgbm')
-    train_set = lgb.Dataset(vec_set, label_set)
-    gbm = lgb.cv(params, train_set, num_boost_round=num_boost_round,
-                 early_stopping_rounds=early_stopping_rounds,
-                 learning_rates=learning_rates,
-                 valid_sets=[train_set])
-    # gbm.fit()
-    # data_process_logger.info('Best parameters found by grid search are: %s' % gbm.best_params_)
-    data_process_logger.info('saving lightgbm')
+    # Quant-data process
+    # label_set = input_datas[:, 1]
+    # vec_set = input_datas[:, 2:]
+    data_process_logger.info('spliting feature datas')
+    # label_set = [a[1] for a in input_datas]
+    # vec_set = [a[2:] for a in input_datas]
+    label_set = input_datas[0]
+    vec_set = input_datas[1]
+    data_process_logger.info('turning list into np2d-array')
+    label_set = np.array(label_set)
+    vec_set = np.array(vec_set)
+    print 'dataset shape: ', vec_set.shape
+    data_process_logger.info('training cv lightgbm')
+    data_process_logger.info('params: \n%s' % params)
+    data_process_logger.info('building dataset')
+    train_set = lgb.Dataset(vec_set, label_set, free_raw_data=False)
+    data_process_logger.info('complete building dataset')
+    # 处理存储间隔
+    # gbm = former_model
+    tmp_model = former_model
+    tmp_num = num_boost_round
+    while tmp_num > save_rounds > 0:
+        gbm = lgb.cv(params, train_set, num_boost_round=save_rounds,
+                     early_stopping_rounds=early_stopping_rounds,
+                     init_model=tmp_model)
+        # m_json = gbm.dump_model()
+        data_process_logger.info('saving lightgbm during training')
+        tmp_num -= save_rounds
+        # save
+        with open(output_path, 'wb') as fout:
+            cPickle.dump(gbm, fout, protocol=2)
+        print 'saved model: %s' % output_path
+        # tmp_model = cPickle.load(open(output_path, 'rb'))
+        tmp_model = gbm
+    gbm = lgb.cv(params, train_set, num_boost_round=save_rounds,
+                     early_stopping_rounds=early_stopping_rounds,
+                     init_model=tmp_model)
+    data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:
         cPickle.dump(gbm, fout)
+    data_process_logger.info('saved model: %s' % output_path)
     return gbm
 
 
