@@ -79,7 +79,7 @@ def pipeline_train_lambda_rank(train_file_number_list, train_params, former_mode
     vec_list = []
     query_datas = []
     data_process_logger.info('combining datas...')
-    for i in xrange(1, len(multi_results)):
+    for i in xrange(0, len(multi_results)):
         data_process_logger.info('combining No.%s data' % i)
         try:
             stock_ids, stock_scores, vec_values, stock_rank_labels, query_count = multi_results[i].get()
@@ -215,10 +215,11 @@ def test_train():
     model_tag = 'lambdarank_15leaves_shuffle500'
     lightgbm_mod = None
     train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
-    random.shuffle(train_file_numbers)
+    # random.shuffle(train_file_numbers)
     pipeline_train_lambda_rank(
         # [1, 2, 3, 4, 5],
-        train_file_numbers[:500],
+        # train_file_numbers[:500],
+        train_file_numbers,
         # range(1000,1100),
         train_params=params,
         former_model=lightgbm_mod,
