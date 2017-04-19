@@ -198,28 +198,29 @@ def test_train():
         'lambda_l2': 1.5,
         'save_binary': True,
         'two_round': False,
-        'max_bin': 255,
+        'max_bin': 127,
         'eval_at': [30, 50, 100]
     }
-    # init_model_tag = 'lambdarank'
-    # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank_15leaves'
+    init_model_tag = 'lambdarank_15leaves_shuffle60'
+    lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
+    model_tag = 'lambdarank_15leaves_shuffle500'
     lightgbm_mod = None
     train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
     random.shuffle(train_file_numbers)
     pipeline_train_lambda_rank(
         # [1, 2, 3, 4, 5],
-        train_file_numbers[:200],
+        train_file_numbers[:500],
+        # range(1000,1100),
         train_params=params,
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500,
-        num_total_iter=10,
+        num_total_iter=50000,
         process_count=32)
 
 
 def test_predict():
-    model_tag = 'lambdarank_15leaves'
+    model_tag = 'lambdarank_15leaves_shuffle30'
     lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)

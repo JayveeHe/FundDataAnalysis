@@ -45,6 +45,7 @@ def process_single_pickle_data(pickle_file_path, query_label=1):
         return 0
 
     with open(pickle_file_path, 'rb') as fin:
+        data_process_logger.info('processing file: %s'%pickle_file_path)
         # stock_ids, stock_scores, vec_values = pickle.load(fin)
         pickle_obj = pickle.load(fin)
         combined_obj = [(pickle_obj[0][i], pickle_obj[1][i], pickle_obj[2][i]) for i in range(len(pickle_obj[0]))]
@@ -140,7 +141,7 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
                     init_model=tmp_model)
     data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:
-        pickle.dump(gbm, fout)
+        pickle.dump(gbm, fout, protocol=2)
     data_process_logger.info('saved model: %s' % output_path)
     return gbm
 
