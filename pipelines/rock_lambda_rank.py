@@ -72,11 +72,12 @@ def pipeline_train_lambda_rank(train_file_number_list, train_params, former_mode
     # fetch datas from pool
     stock_ids, stock_scores, vec_values, stock_rank_labels, query_count = multi_results[0].get()
     # train_datas = tmp_data
-    label_list = stock_rank_labels
-    vec_list = vec_values
-    # label_list = []
-    # vec_list = []
-    query_datas = [query_count]
+    # label_list = stock_rank_labels
+    # vec_list = vec_values
+    # query_datas = [query_count]
+    label_list = []
+    vec_list = []
+    query_datas = []
     data_process_logger.info('combining datas...')
     for i in xrange(1, len(multi_results)):
         data_process_logger.info('combining No.%s data' % i)
@@ -86,16 +87,24 @@ def pipeline_train_lambda_rank(train_file_number_list, train_params, former_mode
             # train_datas = np.vstack((train_datas, datas))
             # train_datas.extend(datas)
             # label_list.extend(stock_scores)
+            tmp_vec_list = []
+            tmp_label_list = []
             for index in range(len(vec_values)):
                 vec = vec_values[index]
                 label = stock_rank_labels[index]
-                if len(vec) == len(vec_list[-1]):
-                    vec_list.append(vec)
-                    label_list.append(label)
+                # if len(vec) == len(vec_list[-1]):
+                if len(vec) == 2897:
+                    tmp_vec_list.append(vec)
+                    tmp_label_list.append(label)
                 else:
-                    print 'not equaling n_feature: %s' % len(vec)
-                    query_count -= 1
-            query_datas.append(query_count)
+                    raise IndexError('not equaling n_feature: %s' % len(vec))
+                    # query_count -= 1
+            if query_count == len(tmp_vec_list):
+                vec_list.extend(tmp_vec_list)
+                label_list.extend(tmp_label_list)
+                query_datas.append(query_count)
+            else:
+                raise IndexError('query count %s not equal to len(vec_list): %s' % (query_count, len(vec_list)))
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
             continue
