@@ -204,12 +204,14 @@ def test_train():
     # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
     model_tag = 'lambdarank_15leaves'
     lightgbm_mod = None
-    pipeline_train_lambda_rank([1, 2, 3, 4, 5], train_params=params,
-                               former_model=lightgbm_mod,
-                               output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-                               save_rounds=500,
-                               num_total_iter=50000,
-                               process_count=32)
+    pipeline_train_lambda_rank(
+        range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511),
+        train_params=params,
+        former_model=lightgbm_mod,
+        output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
+        save_rounds=500,
+        num_total_iter=50000,
+        process_count=32)
 
 
 def test_predict():
