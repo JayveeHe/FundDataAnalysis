@@ -7,6 +7,7 @@ https://github.com/JayveeHe
 from __future__ import division
 import multiprocessing
 import os
+import random
 
 import sys
 
@@ -204,13 +205,16 @@ def test_train():
     # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
     model_tag = 'lambdarank_15leaves'
     lightgbm_mod = None
+    train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
+    random.shuffle(train_file_numbers)
     pipeline_train_lambda_rank(
-        range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511),
+        # [1, 2, 3, 4, 5],
+        train_file_numbers[:200],
         train_params=params,
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500,
-        num_total_iter=50000,
+        num_total_iter=10,
         process_count=32)
 
 
@@ -221,6 +225,7 @@ def test_predict():
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
     pipeline_test_lambdarank_wrapper(
+        # range(1, 10),
         range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
         model=lightgbm_mod)
 
