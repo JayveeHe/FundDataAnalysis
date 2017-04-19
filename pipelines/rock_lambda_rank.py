@@ -6,17 +6,12 @@ https://github.com/JayveeHe
 """
 from __future__ import division
 import multiprocessing
-
-import multiprocessing
 import os
 
 import sys
 
 from lightgbm import Booster
 import numpy as np
-
-from pipelines.analysis_data import result_validation
-from pipelines.train_models import DATA_ROOT
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -27,8 +22,11 @@ try:
 except:
     import pickle
 
+from pipelines.analysis_data import result_validation
+from pipelines.train_models import DATA_ROOT
 from utils.logger_utils import data_process_logger, data_analysis_logger
 from utils.lambda_rank_utils import process_single_pickle_data, train_lambda_rank
+
 
 # for mac-air test
 # DATA_ROOT = PROJECT_PATH
@@ -204,7 +202,7 @@ def test_train():
     }
     # init_model_tag = 'lambdarank'
     # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank'
+    model_tag = 'lambdarank_15leaves'
     lightgbm_mod = None
     pipeline_train_lambda_rank([1, 2, 3, 4, 5], train_params=params,
                                former_model=lightgbm_mod,
@@ -215,12 +213,14 @@ def test_train():
 
 
 def test_predict():
-    model_tag = 'lambdarank'
+    model_tag = 'lambdarank_15leaves'
     lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
-    pipeline_test_lambdarank_wrapper([1, 2, 3, 4, 5, 6, 7, 8, 9], lightgbm_mod)
+    pipeline_test_lambdarank_wrapper(
+        range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
+        model=lightgbm_mod)
 
 
 if __name__ == '__main__':

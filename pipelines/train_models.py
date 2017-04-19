@@ -259,7 +259,7 @@ if __name__ == '__main__':
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    trainer_select('full_15leaves_cv')
+    trainer_select('full_15leaves')
 
     # train_lightGBM_new_data(
     #     range(1, 5),
