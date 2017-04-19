@@ -6,6 +6,8 @@
 *.xlsx
 *.pkl
 *.txt
+*.zip
+*.log
 
 *.out
 
