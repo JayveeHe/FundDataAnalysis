@@ -5,16 +5,12 @@ Created by jayvee on 17/4/20.
 https://github.com/JayveeHe
 """
 from __future__ import division
-import multiprocessing
 import os
-import random
 
 import sys
 
 from lightgbm import Booster
 import numpy as np
-
-from utils.lambda_rank_utils import process_single_pickle_data
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -28,6 +24,7 @@ except:
 from pipelines.analysis_data import result_validation
 from pipelines.train_models import DATA_ROOT
 from utils.logger_utils import data_process_logger, data_analysis_logger
+from utils.lambda_rank_utils import process_single_pickle_data
 
 
 def pipeline_test_lambdarank_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
