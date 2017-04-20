@@ -22,14 +22,12 @@ except:
     import pickle
 
 
-# @profile
 def process_single_pickle_data(pickle_file_path, query_label=1):
     """
     处理单个pickle后的data文件,进行排序、query data的生成等
     Returns: tuple of ranked-features and query data
 
     """
-
     def rank_value(rank, max_rank):
         """
         获取排名权重

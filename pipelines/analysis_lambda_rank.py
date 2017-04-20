@@ -27,6 +27,10 @@ from utils.logger_utils import data_process_logger, data_analysis_logger
 from utils.lambda_rank_utils import process_single_pickle_data
 
 
+# for mac-air test
+# DATA_ROOT = PROJECT_PATH
+
+
 def pipeline_test_lambdarank_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
     """
     进行结果测试
@@ -70,7 +74,7 @@ def test_single_lambdarank_file(fin_path, model_file):
         # global g_model
         data_analysis_logger.info('testing %s' % fin_path)
         stock_ids, stock_scores, vec_values, stock_rank_labels, query_count = process_single_pickle_data(fin_path)
-        ylist = model_file.predict(vec_values, [query_count])
+        ylist = model_file.predict(vec_values)
         origin_score_list = stock_scores
         combined_score_list = np.column_stack((ylist, origin_score_list))
         # input_datas = input_datas.tolist()
@@ -104,10 +108,10 @@ def test_predict():
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
     f_numbers, f_rank_rates = pipeline_test_lambdarank_wrapper(
-        # range(1, 10),
+        # range(1, 3),
         range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
         model=lightgbm_mod)
-    result_tag = 'iter1500'
+    result_tag = 'iter1w5'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:
         for i in range(len(f_numbers)):
@@ -117,4 +121,8 @@ def test_predict():
 
 
 if __name__ == '__main__':
+    # model_tag = 'lambdarank_15leaves_full'
+    # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
+    # fin_path = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0/pickle_datas/%s_trans_norm.pickle' % (1)
+    # test_single_lambdarank_file(fin_path, lightgbm_mod)
     test_predict()
