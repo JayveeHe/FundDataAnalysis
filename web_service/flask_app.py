@@ -15,8 +15,6 @@ from flask_uploads import UploadSet, DATA, configure_uploads
 import os
 import sys
 
-from pipelines.process_real_datas import turn_csv_into_result
-
 try:
     import cPickle as pickle
 except:
@@ -29,6 +27,7 @@ sys.path.append(PROJECT_PATH)
 # add flask path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from pipelines.process_real_datas import turn_csv_into_result
 from utils.lightgbm_operator import LightgbmOperator
 from utils.logger_utils import data_process_logger
 
@@ -107,5 +106,5 @@ def index_page():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=2335, debug=True)
+    app.run(host='0.0.0.0', port=2335, debug=False)
     # print url_for('static/csvs/Old_Best_results', filename='newdata_2739_1_oldbest_result.csv')

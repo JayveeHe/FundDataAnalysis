@@ -79,7 +79,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
     label_list = stock_scores
     vec_list = vec_values
     data_process_logger.info('combining datas...')
-    for i in xrange(0, len(multi_results)):
+    for i in xrange(1, len(multi_results)):
         data_process_logger.info('combining No.%s data' % i)
         try:
             stock_ids, stock_scores, vec_values = multi_results[i].get()
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    trainer_select('full_15leaves_cv')
+    trainer_select('full_15leaves')
 
     # train_lightGBM_new_data(
     #     range(1, 5),
