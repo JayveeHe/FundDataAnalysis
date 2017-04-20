@@ -138,8 +138,8 @@ def test_train():
         'lambda_l2': 1.5,
         'save_binary': True,
         'two_round': False,
-        'max_bin': 127,
-        'eval_at': [30, 50, 100]
+        'max_bin': 255,
+        'eval_at': [30, 50, 100, 300]
     }
     init_model_tag = 'lambdarank_15leaves_full'
     lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
@@ -157,7 +157,7 @@ def test_train():
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=500,
         num_total_iter=50000,
-        process_count=32)
+        process_count=28)
 
 
 if __name__ == '__main__':
