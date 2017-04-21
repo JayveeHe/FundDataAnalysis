@@ -28,6 +28,7 @@ def process_single_pickle_data(pickle_file_path, query_label=1):
     Returns: tuple of ranked-features and query data
 
     """
+
     def rank_value(rank, max_rank):
         """
         获取排名权重
@@ -43,7 +44,7 @@ def process_single_pickle_data(pickle_file_path, query_label=1):
         return 0
 
     with open(pickle_file_path, 'rb') as fin:
-        data_process_logger.info('processing file: %s'%pickle_file_path)
+        data_process_logger.info('processing file: %s' % pickle_file_path)
         # stock_ids, stock_scores, vec_values = pickle.load(fin)
         pickle_obj = pickle.load(fin)
         combined_obj = [(pickle_obj[0][i], pickle_obj[1][i], pickle_obj[2][i]) for i in range(len(pickle_obj[0]))]
@@ -59,7 +60,7 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
                       output_path='./models/lightgbm_model.mod',
                       num_boost_round=60000, early_stopping_rounds=30,
                       learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
-                      params=None, thread_num=12):
+                      params=None, thread_num=12, eval_datas=None):
     """
     使用LightGBM进行训练 lambdarank模型
     Args:
@@ -112,6 +113,10 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
     data_process_logger.info('params: \n%s' % params)
     data_process_logger.info('building dataset')
     train_set = lgb.Dataset(vec_set, label_set, group=group_datas, free_raw_data=False)
+    if eval_datas:
+        eval_set = lgb.Dataset(eval_datas[1], eval_datas[0], group=eval_datas[3], free_raw_data=False)
+    else:
+        eval_set = train_set
     data_process_logger.info('complete building dataset')
     # 处理存储间隔
     # gbm = former_model
@@ -121,7 +126,7 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
         gbm = lgb.train(params, train_set, num_boost_round=save_rounds,
                         early_stopping_rounds=early_stopping_rounds,
                         learning_rates=learning_rates,
-                        valid_sets=[train_set],
+                        valid_sets=[eval_set],
                         init_model=tmp_model)
         # m_json = gbm.dump_model()
         data_process_logger.info('saving lightgbm during training')
@@ -135,7 +140,7 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
     gbm = lgb.train(params, train_set, num_boost_round=tmp_num,
                     early_stopping_rounds=early_stopping_rounds,
                     learning_rates=learning_rates,
-                    valid_sets=[train_set],
+                    valid_sets=[eval_set],
                     init_model=tmp_model)
     data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:
