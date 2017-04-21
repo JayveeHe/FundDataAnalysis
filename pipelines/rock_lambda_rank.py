@@ -11,6 +11,7 @@ import random
 
 import sys
 
+
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
