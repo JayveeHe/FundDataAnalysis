@@ -95,7 +95,7 @@ def test_single_lambdarank_file(fin_path, model_file):
         return mean_rank_rate
     except Exception, e:
         data_process_logger.info('test file failed: file path=%s, details=%s' % (fin_path, e))
-
+        return None
 
 def test_predict():
     """
