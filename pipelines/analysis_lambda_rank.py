@@ -28,7 +28,7 @@ from utils.lambda_rank_utils import process_single_pickle_data
 
 
 # for mac-air test
-DATA_ROOT = PROJECT_PATH
+# DATA_ROOT = PROJECT_PATH
 
 
 def pipeline_test_lambdarank_wrapper(input_file_numbers, model, normalize=True, predict_iteration=None):
@@ -109,8 +109,8 @@ def test_predict():
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
     f_numbers, f_rank_rates = pipeline_test_lambdarank_wrapper(
-        range(1, 3) + [11],
-        # range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
+        # range(1, 3) + [11],
+        range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
         model=lightgbm_mod)
     result_tag = 'iter1w5'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),

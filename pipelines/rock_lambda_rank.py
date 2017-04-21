@@ -216,10 +216,10 @@ def test_train():
         'max_bin': 225,
         'eval_at': [30, 50, 100]
     }
-    init_model_tag = 'lambdarank_15leaves_full'
-    lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank_15leaves_full'
-    # lightgbm_mod = None
+    # init_model_tag = 'lambdarank_15leaves_full_eval'
+    # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
+    model_tag = 'lambdarank_15leaves_full_eval'
+    lightgbm_mod = None
     train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
     # random.shuffle(train_file_numbers)
     eval_numbers = range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(
