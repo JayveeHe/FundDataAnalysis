@@ -11,7 +11,6 @@ import random
 
 import sys
 
-
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
@@ -175,8 +174,8 @@ def pipeline_train_lambda_rank(train_file_number_list, eval_file_number_list, tr
     #     except Exception, e:
     #         data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
     #         continue
-    label_list, vec_list, query_datas = prepare_datas(train_file_number_list, DATA_ROOT,process_count=10)
-    eval_datas = prepare_datas(eval_file_number_list, DATA_ROOT,process_count=10)
+    label_list, vec_list, query_datas = prepare_datas(train_file_number_list, DATA_ROOT, process_count=10)
+    eval_datas = prepare_datas(eval_file_number_list, DATA_ROOT, process_count=10)
     # 组装train_datas
     train_datas = (label_list, vec_list)
     if not output_lightgbm_path:
@@ -227,9 +226,10 @@ def test_train():
     random.shuffle(eval_numbers)
     pipeline_train_lambda_rank(
         # [1, 2, 3, 4, 5],
+        # eval_file_number_list=[6, 7],
         # train_file_numbers[:500],
         train_file_numbers,
-        eval_file_number_list=eval_numbers[:200],
+        eval_file_number_list=eval_numbers[:50],
         # range(1000,1100),
         train_params=params,
         former_model=lightgbm_mod,

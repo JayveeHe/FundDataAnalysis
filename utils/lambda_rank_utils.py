@@ -114,7 +114,7 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
     data_process_logger.info('building dataset')
     train_set = lgb.Dataset(vec_set, label_set, group=group_datas, free_raw_data=False)
     if eval_datas:
-        eval_set = lgb.Dataset(eval_datas[1], eval_datas[0], group=eval_datas[3], free_raw_data=False)
+        eval_set = lgb.Dataset(eval_datas[1], eval_datas[0], group=eval_datas[2], free_raw_data=False)
     else:
         eval_set = train_set
     data_process_logger.info('complete building dataset')
