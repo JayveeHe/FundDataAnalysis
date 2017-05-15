@@ -190,7 +190,7 @@ def pipeline_train_lambda_rank(train_file_number_list, eval_file_number_list, tr
                       former_model=former_model, save_rounds=save_rounds,
                       output_path=output_lightgbm_path, params=train_params,
                       num_boost_round=num_total_iter,
-                      early_stopping_rounds=301,
+                      early_stopping_rounds=500,
                       learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)),
                                                           0.008),
                       thread_num=process_count)
@@ -199,11 +199,11 @@ def pipeline_train_lambda_rank(train_file_number_list, eval_file_number_list, tr
 def test_train():
     params = {
         'objective': 'lambdarank',
-        'num_leaves': 15,
+        'num_leaves': 127,
         'boosting': 'gbdt',
-        'feature_fraction': 0.8,
+        'feature_fraction': 0.7,
         'bagging_fraction': 0.7,
-        'bagging_freq': 50,
+        'bagging_freq': 10,
         'verbose': 0,
         'is_unbalance': False,
         'metric': 'ndcg',
@@ -212,12 +212,12 @@ def test_train():
         'lambda_l2': 1.5,
         'save_binary': True,
         'two_round': False,
-        'max_bin': 225,
-        'eval_at': [30, 50, 100]
+        'max_bin': 255,
+        'eval_at': [50]
     }
-    # init_model_tag = 'lambdarank_15leaves_full_eval'
-    # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank_15leaves_full_eval'
+    #init_model_tag = 'lambdarank_15leaves_full_eval'
+    #lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
+    model_tag = 'lambdarank_127leaves_full_eval_earlystop'
     lightgbm_mod = None
     train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
     # random.shuffle(train_file_numbers)
@@ -234,9 +234,9 @@ def test_train():
         train_params=params,
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-        save_rounds=500,
+        save_rounds=-1,
         num_total_iter=50000,
-        process_count=28)
+        process_count=24)
 
 
 if __name__ == '__main__':

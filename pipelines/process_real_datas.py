@@ -166,18 +166,18 @@ def predict_with_full(fin_csv_path, fout_csv_path=None, tag='Full'):
 
 
 if __name__ == '__main__':
-    # wsr = '/media/user/Seagate Expansion Drive/Quant_Datas_v2.0 test'
-    # # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
-    # fn = range(1, 73)
-    # # model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
-    # # model_path = '%s/models/lightgbm_Full_gbdt_7leaves_iter50000.model' % PROJECT_PATH
-    # # model_tag = 'Full'
-    # # processing_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=50000)
+    wsr = '/media/user/My Passport/Quant_Data_test4.23'
+    # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
+    fn = range(1, 80)
+    model_path = '%s/models/best_models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
+    # model_path = '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH
+    model_tag = 'Old'
+    batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
     # model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
     # model_tag = 'Old_Best'
     # batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)
 
     # process daily csv
-    daily_csv_path = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/daily/newdata_2739.csv'
-    predict_with_oldbest(daily_csv_path)
-    predict_with_full(daily_csv_path)
+    # daily_csv_path = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/daily/newdata_2739.csv'
+    # predict_with_oldbest(daily_csv_path)
+    # predict_with_full(daily_csv_path)
