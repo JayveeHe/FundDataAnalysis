@@ -56,8 +56,9 @@ def pipeline_test_lambdarank_wrapper(input_file_numbers, model, normalize=True, 
             fin_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
         try:
             mean_rank_rate = test_single_lambdarank_file(fin_path, model)
-            mean_rank_rates.append(mean_rank_rate)
-            file_number_list.append(i)
+            if mean_rank_rate:
+                mean_rank_rates.append(mean_rank_rate)
+                file_number_list.append(i)
         except Exception, e:
             data_process_logger.info('test file failed: file path=%s, details=%s' % (fin_path, e))
     mean_rank_rate = np.mean(mean_rank_rates)
@@ -94,7 +95,7 @@ def test_single_lambdarank_file(fin_path, model_file):
         return mean_rank_rate
     except Exception, e:
         data_process_logger.info('test file failed: file path=%s, details=%s' % (fin_path, e))
-
+        return None
 
 def test_predict():
     """
@@ -102,16 +103,16 @@ def test_predict():
     Returns:
 
     """
-    model_tag = 'lambdarank_15leaves_full'
+    model_tag = 'lambdarank_7leaves_full_eval_earlystop'
     lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
     f_numbers, f_rank_rates = pipeline_test_lambdarank_wrapper(
-        # range(1, 3),
+        # range(1, 3) + [11],
         range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
         model=lightgbm_mod)
-    result_tag = 'iter1w5'
+    result_tag = 'haha'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:
         for i in range(len(f_numbers)):

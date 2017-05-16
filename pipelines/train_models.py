@@ -64,7 +64,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
     for i in train_file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
+        data_root_path = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
         pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         data_process_logger.info('add file: %s' % pickle_path)
         data_res = proc_pool.apply_async(load_pickle_datas, args=(pickle_path,))
