@@ -46,7 +46,7 @@ def prepare_datas(file_number_list, DATA_ROOT, process_count=2):
     for i in file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
+        data_root_path = '%s/datas/Quant_Datas_3.0' % (DATA_ROOT)
         pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         data_process_logger.info('add file: %s' % pickle_path)
         data_res = proc_pool.apply_async(process_single_pickle_data, args=(pickle_path, i))
@@ -215,14 +215,14 @@ def test_train():
         'max_bin': 255,
         'eval_at': [50]
     }
-    #init_model_tag = 'lambdarank_15leaves_full_eval'
-    #lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank_127leaves_full_eval_earlystop'
+    # init_model_tag = 'lambdarank_15leaves_full_eval'
+    # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
+    model_tag = 'lambdarank_3.0_127leaves_full_eval_earlystop'
     lightgbm_mod = None
-    train_file_numbers = range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511)
+    train_file_numbers = range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200)
     # random.shuffle(train_file_numbers)
-    eval_numbers = range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(
-        1511, 1521)
+    eval_numbers = range(400, 440) + range(700, 750) + range(845, 870) + range(945, 970) + range(1045, 1100)
+
     random.shuffle(eval_numbers)
     pipeline_train_lambda_rank(
         # [1, 2, 3, 4, 5],
