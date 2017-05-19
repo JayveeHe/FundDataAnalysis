@@ -49,7 +49,7 @@ def pipeline_test_lambdarank_wrapper(input_file_numbers, model, normalize=True, 
         model.save_model('tmp_lambdarank_model.txt', num_iteration=predict_iteration)
         model = Booster(model_file='tmp_lambdarank_model.txt')
     for i in input_file_numbers:
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
+        data_root_path = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
         if normalize:
             fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         else:
@@ -103,15 +103,16 @@ def test_predict():
     Returns:
 
     """
-    model_tag = 'lambdarank_7leaves_full_eval_earlystop'
+    model_tag = 'lambdarank_3.0_127leaves_full_eval_earlystop'
     lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
     # data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
     # fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, 1)
     # test_single_lambdarank_file(fin_path, lightgbm_mod)
     f_numbers, f_rank_rates = pipeline_test_lambdarank_wrapper(
         # range(1, 3) + [11],
-        range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
-        model=lightgbm_mod)
+        # range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
+        range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
+    model=lightgbm_mod)
     result_tag = 'haha'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:

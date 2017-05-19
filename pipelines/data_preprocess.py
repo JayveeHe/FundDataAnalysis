@@ -204,5 +204,5 @@ if __name__ == '__main__':
     # pickle_data = cPickle.load()
     # print len(pickle_data)
     d_r_p = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
-    parallel_inferring(file_number_list=range(1, 1511), process_count=32, is_norm=True, is_norm_score=False,
+    parallel_inferring(file_number_list=range(1, 1511), process_count=32, is_norm=True, is_norm_score=True,
                        data_root_path=d_r_p)
