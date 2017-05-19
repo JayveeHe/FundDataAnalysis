@@ -79,8 +79,8 @@ def prepare_datas(file_number_list, DATA_ROOT, process_count=2):
                 vec = vec_values[index]
                 label = stock_rank_labels[index]
                 # if len(vec) == len(vec_list[-1]):
-                if len(vec) == 2897:
-                    tmp_vec_list.append(vec)
+                if len(vec) >= 4561:
+                    tmp_vec_list.append(vec[:4561])
                     tmp_label_list.append(label)
                 else:
                     raise IndexError('not equaling n_feature: %s' % len(vec))
