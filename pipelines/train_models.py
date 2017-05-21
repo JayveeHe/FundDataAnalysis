@@ -160,7 +160,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, eval_file_numb
         train_with_lightgbm(train_datas, eval_datas=eval_datas, former_model=former_model, save_rounds=save_rounds,
                             output_path=output_lightgbm_path, params=train_params,
                             num_boost_round=num_total_iter,
-                            early_stopping_rounds=301,
+                            early_stopping_rounds=700,
                             learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)),
                                                                 0.008),
                             thread_num=process_count)
@@ -300,7 +300,7 @@ def trainer_select(model_pattern):
             eval_file_number_list=eval_list[:50],
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-            save_rounds=500, num_total_iter=50000, process_count=32)
+            save_rounds=-1, num_total_iter=50000, process_count=32)
 
 
 if __name__ == '__main__':
