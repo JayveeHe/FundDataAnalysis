@@ -190,7 +190,7 @@ def pipeline_train_lambda_rank(train_file_number_list, eval_file_number_list, tr
                       former_model=former_model, save_rounds=save_rounds,
                       output_path=output_lightgbm_path, params=train_params,
                       num_boost_round=num_total_iter,
-                      early_stopping_rounds=500,
+                      early_stopping_rounds=700,
                       learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (num_total_iter * 0.05)),
                                                           0.008),
                       thread_num=process_count)
@@ -199,11 +199,11 @@ def pipeline_train_lambda_rank(train_file_number_list, eval_file_number_list, tr
 def test_train():
     params = {
         'objective': 'lambdarank',
-        'num_leaves': 127,
+        'num_leaves': 63,
         'boosting': 'gbdt',
-        'feature_fraction': 0.7,
+        'feature_fraction': 0.8,
         'bagging_fraction': 0.7,
-        'bagging_freq': 10,
+        'bagging_freq': 5,
         'verbose': 0,
         'is_unbalance': False,
         'metric': 'ndcg',
@@ -217,7 +217,7 @@ def test_train():
     }
     # init_model_tag = 'lambdarank_15leaves_full_eval'
     # lightgbm_mod = pickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, init_model_tag), 'rb'))
-    model_tag = 'lambdarank_3.0_127leaves_full_eval_earlystop'
+    model_tag = 'lambdarank_3.0_63leaves_full_eval_earlystop'
     lightgbm_mod = None
     train_file_numbers = range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200)
     # random.shuffle(train_file_numbers)
@@ -229,14 +229,14 @@ def test_train():
         # eval_file_number_list=[6, 7],
         # train_file_numbers[:500],
         train_file_numbers,
-        eval_file_number_list=eval_numbers[:50],
+        eval_file_number_list=eval_numbers[:70],
         # range(1000,1100),
         train_params=params,
         former_model=lightgbm_mod,
         output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
         save_rounds=-1,
         num_total_iter=50000,
-        process_count=24)
+        process_count=28)
 
 
 if __name__ == '__main__':
