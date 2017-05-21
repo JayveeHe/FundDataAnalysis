@@ -37,31 +37,10 @@ def load_pickle_datas(tmp_pickle_path):
         return pickle_data
 
 
-def train_lightGBM_new_data(train_file_number_list, train_params, former_model=None, output_lightgbm_path=None,
-                            save_rounds=1000,
-                            num_total_iter=100, process_count=12, cv_fold=None):
-    """
-    利用新数据(2899维)训练lightGBM模型
-
-    Args:
-        cv_fold: 是否进行CV,默认None,进行则填fold数
-        train_params: 训练参数
-        process_count: 并行进程数
-        num_total_iter: 总迭代次数
-        save_rounds: 存储的迭代间隔
-        output_lightgbm_path: 模型的保存路径
-        train_file_number_list: 训练文件序号列表
-        former_model: 如果需要从已有模型继续训练,则导入
-
-    Returns:
-
-    """
-
-    # train_file_number_list = range(1, 300)
-    # load with multi-processor
+def prepare_gbdt_datas(file_number_list, DATA_ROOT, process_count=2):
     proc_pool = multiprocessing.Pool(process_count)
     multi_results = []
-    for i in train_file_number_list:
+    for i in file_number_list:
         # data_process_logger.info('loading %s file' % i)
         # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
         data_root_path = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
@@ -98,8 +77,79 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
         except Exception, e:
             data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
             continue
+    return label_list, vec_list
+
+
+def train_lightGBM_new_data(train_file_number_list, train_params, eval_file_number_list=None, former_model=None,
+                            output_lightgbm_path=None,
+                            save_rounds=1000,
+                            num_total_iter=100, process_count=12, cv_fold=None):
+    """
+    利用新数据(2899维)训练lightGBM模型
+
+    Args:
+        eval_file_number_list:
+        cv_fold: 是否进行CV,默认None,进行则填fold数
+        train_params: 训练参数
+        process_count: 并行进程数
+        num_total_iter: 总迭代次数
+        save_rounds: 存储的迭代间隔
+        output_lightgbm_path: 模型的保存路径
+        train_file_number_list: 训练文件序号列表
+        former_model: 如果需要从已有模型继续训练,则导入
+
+    Returns:
+
+    """
+
+    # train_file_number_list = range(1, 300)
+    # load with multi-processor
+    # proc_pool = multiprocessing.Pool(process_count)
+    # multi_results = []
+    # for i in train_file_number_list:
+    #     # data_process_logger.info('loading %s file' % i)
+    #     # csv_path = '%s/datas/Quant-Datas/pickle_datas/%s.csv' % (PROJECT_PATH, i)
+    #     data_root_path = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
+    #     pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
+    #     data_process_logger.info('add file: %s' % pickle_path)
+    #     data_res = proc_pool.apply_async(load_pickle_datas, args=(pickle_path,))
+    #     multi_results.append(data_res)
+    #     # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
+    #     # train_datas += datas
+    # proc_pool.close()
+    # proc_pool.join()
+    # # fetch datas from pool
+    # stock_ids, stock_scores, vec_values = multi_results[0].get()
+    # # train_datas = tmp_data
+    # label_list = stock_scores
+    # vec_list = vec_values
+    # data_process_logger.info('combining datas...')
+    # for i in xrange(1, len(multi_results)):
+    #     data_process_logger.info('combining No.%s data' % i)
+    #     try:
+    #         stock_ids, stock_scores, vec_values = multi_results[i].get()
+    #         # train_datas = np.row_stack((train_datas, datas)) # np.2darray
+    #         # train_datas = np.vstack((train_datas, datas))
+    #         # train_datas.extend(datas)
+    #         # label_list.extend(stock_scores)
+    #         for index in range(len(vec_values)):
+    #             vec = vec_values[index]
+    #             label = stock_scores[index]
+    #             if len(vec) == len(vec_list[-1]):
+    #                 vec_list.append(vec)
+    #                 label_list.append(label)
+    #             else:
+    #                 print 'not equaling n_feature: %s' % len(vec)
+    #     except Exception, e:
+    #         data_process_logger.error('No.%s data failed, details=%s' % (i, str(e.message)))
+    #         continue
     # 组装train_datas
-    train_datas = (label_list, vec_list)
+    train_datas = prepare_gbdt_datas(train_file_number_list, DATA_ROOT, process_count=10)
+    if eval_file_number_list:
+        eval_datas = prepare_gbdt_datas(eval_file_number_list, DATA_ROOT, process_count=10)
+    else:
+        eval_datas = None
+    # train_datas = (label_list, vec_list)
     if not output_lightgbm_path:
         model_tag = 'Quant_Data_%s_norm' % (len(train_file_number_list))
         output_lightgbm_path = '%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag)
@@ -107,7 +157,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
     # num_total_iter = 55
     train_params['num_threads'] = process_count
     if not cv_fold:
-        train_with_lightgbm(train_datas, former_model=former_model, save_rounds=save_rounds,
+        train_with_lightgbm(train_datas, eval_datas=eval_datas, former_model=former_model, save_rounds=save_rounds,
                             output_path=output_lightgbm_path, params=train_params,
                             num_boost_round=num_total_iter,
                             early_stopping_rounds=301,
@@ -125,7 +175,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, former_model=N
 
 def trainer_select(model_pattern):
     model_pattern = model_pattern.lower()
-    if model_pattern not in ['wobble', 'full', 'full_15leaves', 'full_15leaves_cv']:
+    if model_pattern not in ['wobble', 'full', 'full_15leaves', 'full_15leaves_3.0']:
         data_process_logger.error('Pattern not match!')
         return -1
     # ------ Wobble ------
@@ -213,15 +263,15 @@ def trainer_select(model_pattern):
         }
         model_tag = '3.0_Full_gbdt_15leaves'
         train_lightGBM_new_data(
-            range(300, 400) + range(640, 741) + range(845, 900) + range(945, 1000) + range(1045,1120),
+            range(300, 400) + range(640, 741) + range(845, 900) + range(945, 1000) + range(1045, 1120),
             params,
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
             save_rounds=500, num_total_iter=50000, process_count=32)
     # ------ Full CV ------
-    if model_pattern == 'full_15leaves_cv':
+    if model_pattern == 'full_15leaves_3.0':
         # Full
-        model_tag = 'Full_gbdt_15leaves_cv'
+        model_tag = 'Full_gbdt_15leaves_3.0'
         # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
         lightgbm_mod = None
         params = {
@@ -241,10 +291,13 @@ def trainer_select(model_pattern):
             'two_round': False,
             'max_bin': 255
         }
-        model_tag = 'Full_gbdt_15leaves_cv'
+        model_tag = 'Full_gbdt_15leaves_3.0'
+        eval_list = range(400, 440) + range(700, 750) + range(845, 870) + range(945, 970) + range(1045, 1100)
+        random.shuffle(eval_list)
         train_lightGBM_new_data(
-            range(300, 400) + range(840, 941) + range(1042, 1145) + range(1200, 1301) + range(1400, 1511),
+            range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200),
             params,
+            eval_file_number_list=eval_list[:50],
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
             save_rounds=500, num_total_iter=50000, process_count=32)
@@ -259,7 +312,7 @@ if __name__ == '__main__':
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    trainer_select('full_15leaves')
+    trainer_select('full_15leaves_3.0')
 
     # train_lightGBM_new_data(
     #     range(1, 5),

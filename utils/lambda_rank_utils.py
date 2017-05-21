@@ -126,8 +126,8 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
         gbm = lgb.train(params, train_set, num_boost_round=save_rounds,
                         early_stopping_rounds=early_stopping_rounds,
                         learning_rates=learning_rates,
-                        valid_sets=[eval_set, train_set],
-                        valid_names=['eval','train'],
+                        valid_sets=[eval_set],
+                        valid_names=['eval', 'train'],
                         init_model=tmp_model)
         # m_json = gbm.dump_model()
         data_process_logger.info('saving lightgbm during training')
@@ -141,8 +141,8 @@ def train_lambda_rank(input_datas, group_datas, former_model=None, save_rounds=-
     gbm = lgb.train(params, train_set, num_boost_round=tmp_num,
                     early_stopping_rounds=early_stopping_rounds,
                     learning_rates=learning_rates,
-                    valid_sets=[eval_set, train_set],
-                    valid_names=['eval','train'],
+                    valid_sets=[eval_set],
+                    valid_names=['eval', 'train'],
                     init_model=tmp_model)
     data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:

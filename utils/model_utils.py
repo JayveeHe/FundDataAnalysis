@@ -20,13 +20,15 @@ sys.path.append(PROJECT_PATH)
 from utils.logger_utils import data_process_logger
 
 
-def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_path='./models/lightgbm_model.mod',
+def train_with_lightgbm(input_datas, eval_datas=None, former_model=None, save_rounds=-1,
+                        output_path='./models/lightgbm_model.mod',
                         num_boost_round=60000, early_stopping_rounds=30,
                         learning_rates=lambda iter_num: 0.05 * (0.99 ** iter_num) if iter_num < 1000 else 0.001,
                         params=None, thread_num=12):
     """
     使用LightGBM进行训练
     Args:
+        eval_datas:
         save_rounds: 保存的迭代间隔
         input_datas: load_csv_data函数的返回值
         former_model: 如果需要从已有模型继续训练,则导入
@@ -75,6 +77,10 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
     data_process_logger.info('building dataset')
     train_set = lgb.Dataset(vec_set, label_set, free_raw_data=False)
     data_process_logger.info('complete building dataset')
+    if eval_datas:
+        eval_set = lgb.Dataset(eval_datas[1], eval_datas[0], free_raw_data=False)
+    else:
+        eval_set = train_set
     # 处理存储间隔
     # gbm = former_model
     tmp_model = former_model
@@ -83,7 +89,7 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
         gbm = lgb.train(params, train_set, num_boost_round=save_rounds,
                         early_stopping_rounds=early_stopping_rounds,
                         learning_rates=learning_rates,
-                        valid_sets=[train_set],
+                        valid_sets=[eval_set],
                         init_model=tmp_model)
         # m_json = gbm.dump_model()
         data_process_logger.info('saving lightgbm during training')
@@ -97,7 +103,7 @@ def train_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_p
     gbm = lgb.train(params, train_set, num_boost_round=tmp_num,
                     early_stopping_rounds=early_stopping_rounds,
                     learning_rates=learning_rates,
-                    valid_sets=[train_set],
+                    valid_sets=[eval_set],
                     init_model=tmp_model)
     data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:
@@ -180,8 +186,8 @@ def cv_with_lightgbm(input_datas, former_model=None, save_rounds=-1, output_path
         # tmp_model = cPickle.load(open(output_path, 'rb'))
         tmp_model = gbm
     gbm = lgb.cv(params, train_set, num_boost_round=save_rounds,
-                     early_stopping_rounds=early_stopping_rounds,
-                     init_model=tmp_model)
+                 early_stopping_rounds=early_stopping_rounds,
+                 init_model=tmp_model)
     data_process_logger.info('Final saving lightgbm')
     with open(output_path, 'wb') as fout:
         cPickle.dump(gbm, fout)
