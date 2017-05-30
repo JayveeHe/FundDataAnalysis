@@ -294,13 +294,16 @@ def trainer_select(model_pattern):
         model_tag = 'Full_gbdt_15leaves_3.0'
         eval_list = range(400, 440) + range(700, 750) + range(845, 870) + range(945, 970) + range(1045, 1100)
         random.shuffle(eval_list)
+        train_list = range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200)
+        random.shuffle(train_list)
         train_lightGBM_new_data(
-            range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200),
+            # range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200),
+            train_list[:300],
             params,
             eval_file_number_list=eval_list[:50],
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-            save_rounds=-1, num_total_iter=50000, process_count=32)
+            save_rounds=1000, num_total_iter=50000, process_count=32)
 
 
 if __name__ == '__main__':

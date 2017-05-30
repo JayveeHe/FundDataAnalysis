@@ -135,6 +135,8 @@ def infer_missing_datas(fin_csv_path, fout_pickle_path, is_norm=False, is_norm_s
         for line in reader:
             if len(line) == n_feature:
                 single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
+                 # process the 453th col, remove future feature.
+                single_vec_value = single_vec_value[:453]+single_vec_value[454:]
                 origin_datas.append(single_vec_value)
                 # data_process_logger.info('handled line %s' % count)
 
@@ -204,5 +206,5 @@ if __name__ == '__main__':
     # pickle_data = cPickle.load()
     # print len(pickle_data)
     d_r_p = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
-    parallel_inferring(file_number_list=range(1, 1511), process_count=32, is_norm=True, is_norm_score=True,
+    parallel_inferring(file_number_list=range(1, 1511), process_count=32, is_norm=True, is_norm_score=False,
                        data_root_path=d_r_p)

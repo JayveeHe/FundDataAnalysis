@@ -62,7 +62,7 @@ def test_quant_data_wrapper(input_file_numbers, model, normalize=True, predict_i
         model.save_model('tmp_model.txt', num_iteration=predict_iteration)
         model = Booster(model_file='tmp_model.txt')
     for i in input_file_numbers:
-        data_root_path = '%s/datas/Quant-Datas-2.0' % (DATA_ROOT)
+        data_root_path = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
         if normalize:
             fin_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
         else:
@@ -197,21 +197,25 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
     buyer_list = ranked_index_ylist[:N]
     total_error = 0
     origin_rank_list = []
-    for i in range(len(buyer_list)):
-        origin_rank_list.append(buyer_list[i][0] + 1)
-        total_error += abs((buyer_list[i][0] - i))
-    mean_rank = np.mean(origin_rank_list)
-    data_process_logger.info('mean_rank = %s' % mean_rank)
-    data_process_logger.info('mean error = %s' % ((0.0 + total_error) / N))
-    mean_rank_rate = mean_rank / len(ranked_index_ylist)
-    data_process_logger.info('mean_rank_rate = %s' % mean_rank_rate)
-    return mean_rank_rate
+    true_roa=[i[2] for i in buyer_list]
+    mean_score = np.mean(true_roa)
+    data_process_logger.info('mean_score = %s' % mean_score)
+    return mean_score 
+    # for i in range(len(buyer_list)):
+    #     origin_rank_list.append(buyer_list[i][0] + 1)
+    #     total_error += abs((buyer_list[i][0] - i))
+    # mean_rank = np.mean(origin_rank_list)
+    # data_process_logger.info('mean_rank = %s' % mean_rank)
+    # data_process_logger.info('mean error = %s' % ((0.0 + total_error) / N))
+    # mean_rank_rate = mean_rank / len(ranked_index_ylist)
+    # data_process_logger.info('mean_rank_rate = %s' % mean_rank_rate)
+    # return mean_rank_rate
 
 
 if __name__ == '__main__':
     # --------- Testing -------
     # model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best'
-    model_tag = 'Full_gbdt_15leaves_cv'
+    model_tag = 'Full_gbdt_15leaves_3.0'
     # model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
@@ -223,9 +227,9 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-        range(1, 300) + range(401, 840) + range(941, 1042) + range(1145, 1200) + range(1301, 1400) + range(1511, 1521),
+    range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
         lightgbm_mod,
-        normalize=True, predict_iteration=21000)
+        normalize=True, predict_iteration=None)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
@@ -233,7 +237,7 @@ if __name__ == '__main__':
     #     range(1, 11), lightgbm_mod,
     #     normalize=True, process_count=2)
     # save test result to csv
-    result_tag = 'iter2w1'
+    result_tag = '3.0_early'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:
         for i in range(len(f_numbers)):
