@@ -227,9 +227,10 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-    range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
+    range(1,1214),
+    # range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
         lightgbm_mod,
-        normalize=True, predict_iteration=None)
+        normalize=True, predict_iteration=20000)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     #     range(1, 11), lightgbm_mod,
     #     normalize=True, process_count=2)
     # save test result to csv
-    result_tag = '3.0_early'
+    result_tag = '3.0_early_2w'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:
         for i in range(len(f_numbers)):
