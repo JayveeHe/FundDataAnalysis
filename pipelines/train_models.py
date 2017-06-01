@@ -175,7 +175,7 @@ def train_lightGBM_new_data(train_file_number_list, train_params, eval_file_numb
 
 def trainer_select(model_pattern):
     model_pattern = model_pattern.lower()
-    if model_pattern not in ['wobble', 'full', 'full_15leaves', 'full_15leaves_3.0']:
+    if model_pattern not in ['wobble', 'full', 'full_7leaves', 'full_15leaves_3.0']:
         data_process_logger.error('Pattern not match!')
         return -1
     # ------ Wobble ------
@@ -239,14 +239,14 @@ def trainer_select(model_pattern):
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
             save_rounds=500, num_total_iter=50000, process_count=30)
     # ------ Full ------
-    if model_pattern == 'full_15leaves':
+    if model_pattern == 'full_7leaves':
         # Full
-        model_tag = 'Full_gbdt_15leaves'
+        model_tag = 'Full_gbdt_7leaves_3.0'
         # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
         lightgbm_mod = None
         params = {
             'objective': 'regression_l2',
-            'num_leaves': 15,
+            'num_leaves': 7,
             'boosting': 'gbdt',
             'feature_fraction': 0.8,
             'bagging_fraction': 0.7,
@@ -261,13 +261,19 @@ def trainer_select(model_pattern):
             'two_round': False,
             'max_bin': 255
         }
-        model_tag = '3.0_Full_gbdt_15leaves'
+        model_tag = 'Full_gbdt_7leaves_3.0'
+        eval_list = range(400, 440) + range(700, 750) + range(845, 870) + range(945, 970) + range(1045, 1100)
+        random.shuffle(eval_list)
+        train_list = range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200)
+        random.shuffle(train_list)
         train_lightGBM_new_data(
-            range(300, 400) + range(640, 741) + range(845, 900) + range(945, 1000) + range(1045, 1120),
+            # range(440, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200),
+            train_list[:300],
             params,
+            eval_file_number_list=eval_list[:50],
             former_model=lightgbm_mod,
             output_lightgbm_path='%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag),
-            save_rounds=500, num_total_iter=50000, process_count=32)
+            save_rounds=1000, num_total_iter=50000, process_count=32)
     # ------ Full CV ------
     if model_pattern == 'full_15leaves_3.0':
         # Full
@@ -315,8 +321,8 @@ if __name__ == '__main__':
     # lightgbm_mod = cPickle.load(open('%s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag), 'rb'))
 
     # training
-    trainer_select('full_15leaves_3.0')
-
+    # trainer_select('full_15leaves_3.0')
+    trainer_select('full_7leaves')
     # train_lightGBM_new_data(
     #     range(1, 5),
     #     former_model=lightgbm_mod,
