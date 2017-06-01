@@ -51,15 +51,23 @@ def turn_csv_into_result(origin_csv_path, output_csv_path, predict_model, predic
         writer = csv.writer(fout_csv)
         # count = 0
         origin_datas = []
-        n_feature = 4563
         data_process_logger.info('start reading %s' % origin_csv_path)
         # 首先进行缺失值的补充和标准化
+        count = 1
+        n_feature = 4563
         for line in reader:
-            single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
-            single_vec_value = single_vec_value[:453]+single_vec_value[454:]
-            origin_datas.append(single_vec_value)
-            # data_process_logger.info('handled line %s' % count)
-            # count += 1
+            if len(line) == n_feature:
+                single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
+                 # process the 453th col, remove future feature.
+                single_vec_value = single_vec_value[:453]+single_vec_value[454:]
+                origin_datas.append(single_vec_value)
+                # data_process_logger.info('handled line %s' % count)
+
+            else:
+                data_process_logger.info(
+                    'casting line: %s in file %s, it has %s features while the first line has %s' % (
+                        count, origin_csv_path, len(line), n_feature))
+            count += 1
         # inferring missing data
         imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
         imp.fit(origin_datas)
