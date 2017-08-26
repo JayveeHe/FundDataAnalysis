@@ -263,7 +263,7 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True, is_norm
             # fout_csv_path = '%s/transformed_datas/%s_trans.csv' % (data_root_path, i)
             # fout_pickle_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
             fout_gzip_path = '%s/gzip_datas/%s_trans.gz' % (data_root_path, i)
-        data_res = proc_pool.apply_async(infer_missing_datas,
+        data_res = proc_pool.apply_async(infer_missing_datas_to_gzip,
                                          args=(fin_csv_path, fout_gzip_path, is_norm, is_norm_score))
         # multi_results.append(data_res)
         # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
