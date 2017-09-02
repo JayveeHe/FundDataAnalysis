@@ -178,11 +178,11 @@ def predict_with_full(fin_csv_path, fout_csv_path=None, tag='Full'):
 if __name__ == '__main__':
     wsr = '/media/user/Data0/DataTest3.0'
     # wsr = '/Users/jayvee/CS/Python/FundDataAnalysis/datas/Quant-Datas-2.0'
-    fn = range(1, 90)
-    model_path = '%s/models/best_models/lightgbm_Full_gbdt_15leaves_3.0.model' % PROJECT_PATH
+    fn = range(1, 91)
+    model_path = '%s/models/best_models/lightgbm_Full_gbdt_7leaves_3.0.model' % PROJECT_PATH
     # model_path = '%s/models/best_models/lightgbm_Full_gbdt_15leaves.model' % PROJECT_PATH
-    model_tag = 'New'
-    batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=20000)
+    model_tag = 'New_7leaves'
+    batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=5275)
     # model_path = '%s/models/lightgbm_New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best.model' % PROJECT_PATH
     # model_tag = 'Old_Best'
     # batch_process_real_data(model_path, fn, wsr, model_tag=model_tag, predict_iter=27000)

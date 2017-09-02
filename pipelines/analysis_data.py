@@ -215,7 +215,7 @@ def result_validation(ranked_index_ylist, N=50, threshold=0.35):
 if __name__ == '__main__':
     # --------- Testing -------
     # model_tag = 'New_Quant_Data_rebalanced_norm_gbdt_7leaves_iter30000_best'
-    model_tag = 'Full_gbdt_15leaves_3.0'
+    model_tag = 'Full_gbdt_7leaves_3.0'
     # model_tag = 'Full_gbdt_7leaves_iter50000'
     data_process_logger.info('--------LightGBM:----------')
     data_process_logger.info('using model: %s/models/lightgbm_%s.model' % (PROJECT_PATH, model_tag))
@@ -227,10 +227,10 @@ if __name__ == '__main__':
     # test_datas_wrapper(range(1,100),lightgbm_mod)
     data_process_logger.info('test test file')
     f_numbers, f_rank_rates = test_quant_data_wrapper(
-    range(1,1214),
-    # range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
+    # range(1,1214),
+    range(540,640)+range(800,845)+range(920,945)+range(1020,1045)+range(1200,1214),
         lightgbm_mod,
-        normalize=True, predict_iteration=20000)
+        normalize=True, predict_iteration=5275)
     # f_numbers, f_rank_rates = test_quant_data_wrapper(
     #     range(1, 11), lightgbm_mod,
     #     normalize=True)
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     #     range(1, 11), lightgbm_mod,
     #     normalize=True, process_count=2)
     # save test result to csv
-    result_tag = '3.0_early_2w'
+    result_tag = '3.0_early_5275'
     with open('%s/pipelines/test_%s_%s_result_%s.csv' % (PROJECT_PATH, model_tag, result_tag, len(f_numbers)),
               'wb') as fout:
         for i in range(len(f_numbers)):
