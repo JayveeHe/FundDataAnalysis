@@ -15,7 +15,7 @@ def test_predictions(gzip_file_path_list, model_path, result_output='keras_resul
     pred_model = keras.models.load_model(model_path)
     mean_rank_list = []
     rank_rate_list = []
-    if not result_output:
+    if result_output:
         res_output = open(result_output, 'w')
         res_output.write('gzip_file_path, mean_rank, rank_rate\n')
     for i in xrange(len(gzip_file_path_list)):
@@ -32,7 +32,7 @@ def test_predictions(gzip_file_path_list, model_path, result_output='keras_resul
                 stock_score = input_vec[1]
                 feature_vec = input_vec[2:]
                 label_vec = stock_score
-                pred_label = pred_model.predict(feature_vec, batch_size=1)
+                pred_label = pred_model.predict(np.array([feature_vec]), batch_size=1)
                 pred_score_list.append((index, pred_label, stock_id))
                 true_score_list.append((index, stock_score, stock_id))
                 index += 1
