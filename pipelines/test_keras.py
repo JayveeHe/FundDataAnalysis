@@ -62,7 +62,9 @@ def test_rank(true_score_list, pred_score_list, topk=50):
 
 
 if __name__ == '__main__':
+    train_file_numbers = range(300, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200) + range(1220, 1270)
     test_file_numbers = range(540, 640) + range(800, 845) + range(920, 945) + range(1020, 1045) + range(1200, 1214)
-    DATA_ROOT = '/media/user/Data0/hjw/datas/Quant_Datas_v3.0/gzip_datas'
-    test_filepath_list = [os.path.join(DATA_ROOT, '%s_trans_norm.gz' % fn) for fn in test_file_numbers]
-    test_predictions(test_filepath_list, model_path='keras_model.mod')
+    DATA_ROOT = '/media/user/Data0/hjw/datas/Quant_Datas_v4.0/gzip_datas'
+    # test_filepath_list = [os.path.join(DATA_ROOT, '%s_trans_norm.gz' % fn) for fn in test_file_numbers]
+    test_filepath_list = [os.path.join(DATA_ROOT, '%s_trans.gz' % fn) for fn in train_file_numbers]
+    test_predictions(test_filepath_list, model_path='keras_model.mod', result_output='keras_result_train.txt')

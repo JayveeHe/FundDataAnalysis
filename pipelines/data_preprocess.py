@@ -192,7 +192,7 @@ def infer_missing_datas_to_gzip(fin_csv_path, fout_gzip_path, is_norm=True, is_n
             if len(line) == n_feature:
                 single_vec_value = [float(i) if i != 'NaN' else np.nan for i in line]
                 # process the 453th col, remove future feature.
-                single_vec_value = single_vec_value[:453] + single_vec_value[454:]
+                # single_vec_value = single_vec_value[:453] + single_vec_value[454:]
                 origin_datas.append(single_vec_value)
                 # data_process_logger.info('handled line %s' % count)
 
@@ -208,21 +208,21 @@ def infer_missing_datas_to_gzip(fin_csv_path, fout_gzip_path, is_norm=True, is_n
         stock_ids = []
         stock_scores = []
         scaled_vec_values = []
+        stock_ids = transformed_datas[:, 0]
+        stock_scores = transformed_datas[:, 1]
+        scaled_vec_values = transformed_datas[:, 2:]
         if is_norm:
             # standardising datas
-            stock_ids = transformed_datas[:, 0]
-            stock_scores = transformed_datas[:, 1]
-            vec_values = transformed_datas[:, 2:]
-            scaled_vec_values = preprocessing.scale(vec_values)
+            scaled_vec_values = preprocessing.scale(scaled_vec_values)
             if is_norm_score:
                 stock_scores = preprocessing.scale(stock_scores)
-            transformed_datas = (stock_ids.tolist(), stock_scores.tolist(), scaled_vec_values.tolist())  # 存为tuple
+        # transformed_datas = (stock_ids.tolist(), stock_scores.tolist(), scaled_vec_values.tolist())  # 存为tuple
         # writting transformed datas
         # data_process_logger.info('start writting %s' % fout_csv_path)
         data_process_logger.info('start saving %s' % fout_gzip_path)
         # transformed_datas = transformed_datas.tolist()  # 转为list进行存储
         # cPickle.dump(transformed_datas, fout_gzip, protocol=2)
-        for line_index in xrange(len(transformed_datas[0])):
+        for line_index in xrange(len(stock_ids)):
             stock_id = stock_ids[line_index]
             stock_score = stock_scores[line_index]
             scaled_vec_value = scaled_vec_values[line_index]
@@ -258,7 +258,7 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True, is_norm
         if is_norm:
             # fout_csv_path = '%s/transformed_datas/%s_trans_norm.csv' % (data_root_path, i)
             # fout_pickle_path = '%s/pickle_datas/%s_trans_norm.pickle' % (data_root_path, i)
-            fout_gzip_path = '%s/gzip_datas/%s_trans_norm.gz' % (data_root_path, i)
+            fout_gzip_path = '%s/gzip_datas_norm/%s_trans_norm.gz' % (data_root_path, i)
         else:
             # fout_csv_path = '%s/transformed_datas/%s_trans.csv' % (data_root_path, i)
             # fout_pickle_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
@@ -281,6 +281,6 @@ if __name__ == '__main__':
     #     is_norm=True, is_norm_score=False)
     # pickle_data = cPickle.load()
     # print len(pickle_data)
-    d_r_p = '%s/datas/Quant_Datas_v3.0' % (DATA_ROOT)
-    parallel_inferring(file_number_list=range(1, 1511), process_count=28, is_norm=True, is_norm_score=False,
+    d_r_p = '%s/datas/Quant_Datas_v4.0' % (DATA_ROOT)
+    parallel_inferring(file_number_list=range(1, 1511), process_count=28, is_norm=False, is_norm_score=False,
                        data_root_path=d_r_p)
