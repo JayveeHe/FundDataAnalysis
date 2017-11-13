@@ -18,6 +18,7 @@ print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
 sys.path.append(PROJECT_PATH)
 
 from utils.logger_utils import data_process_logger
+import lightgbm as lgb
 
 
 def train_with_lightgbm(input_datas, eval_datas=None, former_model=None, save_rounds=-1,
@@ -42,7 +43,6 @@ def train_with_lightgbm(input_datas, eval_datas=None, former_model=None, save_ro
     Returns:
         训练后的模型实例
     """
-    import lightgbm as lgb
     # param = {'num_leaves': 31, 'num_trees': 100, 'objective': 'binary'}
     # num_round = 10
     data_process_logger.info('start training lightgbm')

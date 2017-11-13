@@ -3,3 +3,4 @@ scipy
 sklearn
 flask
 flask-uploads
+lightgbm
