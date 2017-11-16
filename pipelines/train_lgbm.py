@@ -60,7 +60,7 @@ def train_lgb(model_output_path,
     eval_res = {}
     for epoch in xrange(max_epochs):
         train_generator = gzip_sample_generator(train_filepath_list, batch_size=50000, total_limit=1000000,
-                                                per_file_limit=10000)
+                                                per_file_limit=100000)
         for iter_n in xrange(iteration_per_epoch):
             train_x, train_y = next(train_generator)
             tmp_dataset = Dataset(train_x, train_y, free_raw_data=False)
