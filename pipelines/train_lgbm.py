@@ -26,9 +26,9 @@ def train_lgb(model_output_path,
     train_file_numbers = range(1, 540) + range(750, 800) + range(870, 920) + range(970, 1020) + range(1100, 1200)
     valid_file_numbers = range(400, 440) + range(700, 750) + range(845, 870) + range(945, 970) + range(1045, 1100)
     test_file_numbers = range(540, 640) + range(800, 845) + range(920, 945) + range(1020, 1045) + range(1200, 1214)
-    DATA_ROOT = '/media/user/Data0/hjw/datas/Quant_Datas_v4.0/gzip_datas'
-    train_filepath_list = [os.path.join(DATA_ROOT, '%s_trans.gz' % fn) for fn in train_file_numbers]
-    valid_filepath_list = [os.path.join(DATA_ROOT, '%s_trans.gz' % fn) for fn in valid_file_numbers]
+    DATA_ROOT = '/media/user/Data0/hjw/datas/Quant_Datas_v4.0/gzip_norm_datas'
+    train_filepath_list = [os.path.join(DATA_ROOT, '%s_trans_norm.gz' % fn) for fn in train_file_numbers]
+    valid_filepath_list = [os.path.join(DATA_ROOT, '%s_trans_norm.gz' % fn) for fn in valid_file_numbers]
     # basic_model = build_model(feature_dim=4560, output_dim=1)
     # train_filepath_list = ['/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/gzip_datas/993_trans.gz']
     # valid_filepath_list = ['/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/gzip_datas/993_trans.gz']
@@ -66,7 +66,7 @@ def train_lgb(model_output_path,
             tmp_dataset = Dataset(train_x, train_y, free_raw_data=False)
             # if not gbm:
             gbm = lgb.train(params, tmp_dataset, num_boost_round=save_rounds,
-                            early_stopping_rounds=20, keep_training_booster=True,
+                            early_stopping_rounds=30, keep_training_booster=True,
                             learning_rates=lambda iter_num: max(1 * (0.98 ** iter_num / (iteration_per_epoch * 0.05)),
                                                                 0.008),
                             valid_sets=[valid_set],
@@ -112,4 +112,4 @@ def train_lgb(model_output_path,
 
 
 if __name__ == '__main__':
-    train_lgb('test_lgb.mod', thread_num=2, save_rounds=50, iteration_per_epoch=20)
+    train_lgb('test_lgb.mod', thread_num=5, save_rounds=100, iteration_per_epoch=20)
