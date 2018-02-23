@@ -13,6 +13,9 @@ import cPickle
 import numpy as np
 from sklearn import preprocessing
 from sklearn.preprocessing import Imputer
+import pandas as pd
+
+import json
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print 'Related File:%s\t----------project_path=%s' % (__file__, PROJECT_PATH)
@@ -263,14 +266,45 @@ def parallel_inferring(file_number_list, process_count=12, is_norm=True, is_norm
             # fout_csv_path = '%s/transformed_datas/%s_trans.csv' % (data_root_path, i)
             # fout_pickle_path = '%s/pickle_datas/%s_trans.pickle' % (data_root_path, i)
             fout_gzip_path = '%s/gzip_datas/%s_trans.gz' % (data_root_path, i)
-        data_res = proc_pool.apply_async(infer_missing_datas_to_gzip,
-                                         args=(fin_csv_path, fout_gzip_path, is_norm, is_norm_score))
+        # data_res = proc_pool.apply_async(infer_missing_datas_to_gzip,
+        #                                  args=(fin_csv_path, fout_gzip_path, is_norm, is_norm_score))
+        data_res = proc_pool.apply_async(infer_data_pandas,
+                                         args=(fin_csv_path, fout_gzip_path))
         # multi_results.append(data_res)
         # datas = load_csv_data(csv_path, normalize=True, is_combine=True)
         # train_datas += datas
     proc_pool.close()
     proc_pool.join()
     data_process_logger.info('Done with %s files' % len(file_number_list))
+
+
+def prepare_pair_data(single_file_path, output_path):
+    with open(single_file_path, 'r') as fin, gzip.open(output_path, 'w') as fout:
+        csv_item = pd.read_csv(fin)
+        csv_item.fillna(csv_item.mean())
+        count = 0
+        normed_data = csv_item.apply(lambda x: (x - np.min(x)) / (np.max(x) - np.min(x)))  # min/max 归一化
+        for line in normed_data.iterrows():
+            data = line[1].values.tolist()
+            fout.write(json.dumps(data) + '\n')
+            count += 1
+            if count % 500 == 0:
+                print '%s done in %s' % (count, single_file_path)
+                # item = line.strip().split()
+
+
+def infer_data_pandas(single_file_path, output_path):
+    with open(single_file_path, 'r') as fin, gzip.open(output_path, 'w') as fout:
+        csv_item = pd.read_csv(fin)
+        csv_item.fillna(csv_item.mean())
+        count = 0
+        normed_data = csv_item.apply(lambda x: (x - np.min(x)) / (np.max(x) - np.min(x)))  # min/max 归一化
+        for line in normed_data.iterrows():
+            data = line[1].values.tolist()
+            fout.write(json.dumps(data) + '\n')
+            count += 1
+            if count % 500 == 0:
+                print '%s done in %s' % (count, single_file_path)
 
 
 if __name__ == '__main__':
@@ -281,6 +315,8 @@ if __name__ == '__main__':
     #     is_norm=True, is_norm_score=False)
     # pickle_data = cPickle.load()
     # print len(pickle_data)
+    # prepare_pair_data('/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/999.csv',
+    #                   'datas/gzip_datas/999_trans.gz')
     d_r_p = '%s/datas/Quant_Datas_v4.0' % (DATA_ROOT)
     parallel_inferring(file_number_list=range(1, 1511), process_count=10, is_norm=True, is_norm_score=True,
                        data_root_path=d_r_p)
