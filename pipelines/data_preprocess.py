@@ -318,5 +318,5 @@ if __name__ == '__main__':
     # prepare_pair_data('/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/999.csv',
     #                   'datas/gzip_datas/999_trans.gz')
     d_r_p = '%s/datas/Quant_Datas_v4.0' % (DATA_ROOT)
-    parallel_inferring(file_number_list=range(1, 1511), process_count=10, is_norm=True, is_norm_score=True,
+    parallel_inferring(file_number_list=range(1, 1511), process_count=20, is_norm=True, is_norm_score=True,
                        data_root_path=d_r_p)

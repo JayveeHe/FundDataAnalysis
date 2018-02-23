@@ -22,7 +22,6 @@ sys.path.append(PROJECT_PATH)
 from utils.logger_utils import data_process_logger
 from utils.model_utils import train_with_lightgbm, cv_with_lightgbm
 import cPickle
-import numpy as np
 
 DATA_ROOT = '/media/user/Data0/hjw'
 
