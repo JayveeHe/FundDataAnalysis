@@ -299,8 +299,9 @@ def infer_data_pandas(single_file_path, output_path):
         csv_item.fillna(csv_item.mean())
         count = 0
         normed_data = csv_item.apply(lambda x: (x - np.min(x)) / (np.max(x) - np.min(x)))  # min/max 归一化
-        for line in normed_data.iterrows():
-            data = line[1].values.tolist()
+        normed_list = np.array(normed_data).tolist()
+        for line in normed_list:
+            data = line
             fout.write(json.dumps(data) + '\n')
             count += 1
             if count % 500 == 0:
@@ -315,8 +316,8 @@ if __name__ == '__main__':
     #     is_norm=True, is_norm_score=False)
     # pickle_data = cPickle.load()
     # print len(pickle_data)
-    # prepare_pair_data('/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/999.csv',
-    #                   'datas/gzip_datas/999_trans.gz')
+    infer_data_pandas('/Users/jayveehe/git_project/FundDataAnalysis/pipelines/datas/999.csv',
+                      'datas/gzip_datas/999_trans.gz')
     d_r_p = '%s/datas/Quant_Datas_v4.0' % (DATA_ROOT)
     parallel_inferring(file_number_list=range(1, 1511), process_count=20, is_norm=True, is_norm_score=True,
                        data_root_path=d_r_p)
